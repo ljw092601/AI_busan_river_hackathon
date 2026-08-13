@@ -5,6 +5,7 @@ import { RiverMap } from '@/features/map';
 import { DexContainer } from '@/features/dex';
 import { AuthGate } from '@/features/auth';
 import { DevScreen } from '@/features/dev/DevScreen';
+import { DemoLocationPanel } from '@/features/dev/DemoLocationPanel';
 
 /**
  * 라우트.
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: (
+      <>
+      {/* 시연용 위치 이동. isDemoMode()가 false면 아무것도 그리지 않습니다.
+          개발 서버에서는 항상, 배포본에서는 ?demo=1 일 때만 보입니다. */}
+      <DemoLocationPanel />
       <HomeScreen
         renderMissionModal={(river, onClose) => (
           <MissionModal river={river} onClose={onClose} />
@@ -36,6 +41,7 @@ export const router = createBrowserRouter([
           />
         )}
       />
+      </>
     ),
   },
 

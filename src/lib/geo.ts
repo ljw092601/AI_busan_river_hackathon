@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 /**
  * 위치 계층 — 지도 트랙과 잠금해제 트랙이 **공유하는 계약**입니다.
@@ -54,9 +54,66 @@ export interface GeoState {
   position: GeoPosition | null;
   /** 사용자에게 그대로 보여줄 수 있는 한국어 설명. */
   message: string | null;
+  /** ★ 시연용으로 위치를 흉내내고 있는 중인가. 화면에 반드시 표시하세요. */
+  isSimulated: boolean;
   /** 위치 추적 시작. 사용자 제스처 안에서 불러야 합니다. */
   start: () => void;
   stop: () => void;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 시연용 위치 시뮬레이션
+//
+// ★ 왜 훅 안에서 가로채는가
+//   지도와 잠금 판정은 HomeScreen의 useGeolocation() **하나**를 보고 있습니다.
+//   여기서 바꾸면 두 곳이 자동으로 따라옵니다. 반대로 화면마다 "가짜 위치" 상태를
+//   따로 두면 지도는 옮겨졌는데 잠금은 안 풀리는 식으로 어긋납니다.
+//
+// ⚠️ 이것은 **시연 도구**입니다. 실제 위치를 속이는 것이므로
+//   화면에 시뮬레이션 중임을 반드시 표시해야 합니다(isSimulated).
+//   잠금 판정 자체가 원래 클라이언트 측이라 이 버튼이 새로운 우회 경로를
+//   만드는 것은 아니지만, 조용히 동작하게 두면 안 됩니다.
+// ─────────────────────────────────────────────────────────────────────────────
+
+let simulated: GeoPosition | null = null;
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const l of listeners) l();
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => void listeners.delete(cb);
+}
+
+/** 시연용 위치 설정. null이면 실제 GPS로 되돌아갑니다. */
+export function setSimulatedPosition(p: { lat: number; lng: number } | null): void {
+  simulated = p ? { lat: p.lat, lng: p.lng, accuracy: 5, at: 0 } : null;
+  emit();
+}
+
+export function getSimulatedPosition(): GeoPosition | null {
+  return simulated;
+}
+
+/**
+ * 시연 도구를 켤지 여부.
+ *   · 개발 서버에서는 항상 켜짐
+ *   · 배포본에서는 주소에 ?demo=1 을 붙였을 때만 (세션 동안 유지)
+ * 일반 방문자에게는 보이지 않습니다.
+ */
+export function isDemoMode(): boolean {
+  if (import.meta.env.DEV) return true;
+  try {
+    if (new URLSearchParams(window.location.search).get('demo') === '1') {
+      sessionStorage.setItem('demo-mode', '1');
+      return true;
+    }
+    return sessionStorage.getItem('demo-mode') === '1';
+  } catch {
+    return false;
+  }
 }
 
 const MESSAGES: Record<Exclude<GeoStatus, 'idle' | 'watching' | 'prompting'>, string> = {
@@ -123,10 +180,26 @@ export function useGeolocation(): GeoState {
 
   useEffect(() => stop, []);
 
+  // 시연용 위치가 설정돼 있으면 그것이 실제 GPS를 덮어씁니다.
+  const sim = useSyncExternalStore(subscribe, getSimulatedPosition, () => null);
+
+  if (sim) {
+    return {
+      // 좌표를 이미 알고 있으므로 '위치 잡는 중' 상태로 두면 안 됩니다.
+      status: 'watching',
+      position: sim,
+      message: null,
+      isSimulated: true,
+      start,
+      stop,
+    };
+  }
+
   return {
     status,
     position,
     message: status in MESSAGES ? MESSAGES[status as keyof typeof MESSAGES] : null,
+    isSimulated: false,
     start,
     stop,
   };
