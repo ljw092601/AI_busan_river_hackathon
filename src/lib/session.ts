@@ -30,12 +30,24 @@ export function useSession() {
   });
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       // 토큰 갱신·로그인·로그아웃을 캐시에 직접 반영합니다.
       queryClient.setQueryData(SESSION_QUERY_KEY, session);
-      if (!session) {
-        // 로그아웃 시 남의 계정 데이터가 화면에 남지 않도록 전부 무효화합니다.
-        queryClient.clear();
+
+      // ⚠️ 예전에는 `if (!session) queryClient.clear()` 였습니다. 두 가지가 잘못됐습니다.
+      //
+      //  ① onAuthStateChange 는 구독 직후 **INITIAL_SESSION 을 즉시 발화**합니다.
+      //     미로그인 상태에서 이 훅을 쓰는 컴포넌트가 마운트될 때마다 session 이 null 로
+      //     들어와 캐시 전체가 날아갔습니다. 로그인 모달을 여는 것만으로 하천·지도
+      //     데이터가 비워지고 다시 받아왔습니다.
+      //  ② clear() 는 방금 위에서 넣은 세션 데이터까지 지워 버려, 세션 쿼리가
+      //     제거되고 재조회되는 왕복이 한 번 더 생겼습니다.
+      //
+      // 실제로 비워야 하는 순간은 **로그아웃뿐**이고, 세션 키는 남겨야 합니다.
+      if (event === 'SIGNED_OUT') {
+        queryClient.removeQueries({
+          predicate: (q) => q.queryKey[0] !== SESSION_QUERY_KEY[0],
+        });
       }
     });
     return () => sub.subscription.unsubscribe();
