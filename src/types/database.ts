@@ -524,16 +524,20 @@ export type Database = {
       river_missions: {
         Row: {
           completed_at: string
+          /** 미션 인증 사진. 촬영 실패해도 미션은 완료될 수 있어 nullable 입니다. */
+          photo_id: string | null
           river_id: string
           user_id: string
         }
         Insert: {
           completed_at?: string
+          photo_id?: string | null
           river_id: string
           user_id: string
         }
         Update: {
           completed_at?: string
+          photo_id?: string | null
           river_id?: string
           user_id?: string
         }

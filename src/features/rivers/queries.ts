@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/lib/session';
+import type { Insert } from '@/types/database';
 import type { MissionConfig, MissionKind, QuizView, RiverView } from './types';
 
 /**
@@ -124,17 +125,40 @@ export function useRivers() {
   };
 }
 
-/** 미션 완료 기록. 미로그인이면 아무것도 하지 않고 false를 돌려줍니다. */
+/**
+ * 미션 완료 기록. 미로그인이면 아무것도 하지 않고 false를 돌려줍니다.
+ *
+ * 사진을 찍는 미션(온천천·대천천)은 photoId 를 함께 넘겨 river_missions.photo_id 에
+ * 묶습니다. 사진은 선택입니다 — 촬영 실패·취소·미로그인이면 riverId 만 넘기세요.
+ * (예전처럼 문자열 하나만 넘기는 호출도 그대로 동작합니다.)
+ *
+ * ⚠️ 남의 photo id 를 넣어도 서버가 막습니다 — RLS 가 사진 소유자를 다시 확인합니다.
+ */
+export interface CompleteMissionInput {
+  riverId: string;
+  /** 미션 인증 사진. 없으면 생략하세요(null 을 넣어도 기존 사진을 지우지 않습니다). */
+  photoId?: string | null;
+}
+
 export function useCompleteMission() {
   const { userId } = useSession();
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (riverId: string) => {
+    mutationFn: async (input: string | CompleteMissionInput) => {
+      const riverId = typeof input === 'string' ? input : input.riverId;
+      const photoId = typeof input === 'string' ? null : (input.photoId ?? null);
       if (!userId) return false;
+
+      // ⚠️ photo_id 를 **넣을 때만** 보냅니다.
+      //   upsert 는 보낸 컬럼만 덮어쓰므로, 사진이 없다고 photo_id: null 을 같이 보내면
+      //   먼저 성공했던 촬영 기록이 재시도 한 번에 지워집니다.
+      const row: Insert<'river_missions'> = { user_id: userId, river_id: riverId };
+      if (photoId) row.photo_id = photoId;
+
       const { error } = await supabase
         .from('river_missions')
-        .upsert({ user_id: userId, river_id: riverId }, { onConflict: 'user_id,river_id' });
+        .upsert(row, { onConflict: 'user_id,river_id' });
       if (error) throw error;
       return true;
     },

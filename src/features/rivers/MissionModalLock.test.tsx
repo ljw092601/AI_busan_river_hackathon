@@ -23,7 +23,8 @@ declare global {
 }
 
 const state = vi.hoisted(() => ({
-  missionCalls: [] as string[],
+  // ★ 사진 미션은 photoId 를 함께 실어 보냅니다. 문자열만 받던 옛 계약이 아닙니다.
+  missionCalls: [] as (string | { riverId: string; photoId?: string | null })[],
   quizCalls: [] as unknown[],
   claimCalls: [] as string[],
 }));
@@ -34,8 +35,8 @@ vi.mock('@/lib/session', () => ({
 
 vi.mock('./queries', () => ({
   useCompleteMission: () => ({
-    mutateAsync: async (riverId: string) => {
-      state.missionCalls.push(riverId);
+    mutateAsync: async (input: string | { riverId: string; photoId?: string | null }) => {
+      state.missionCalls.push(input);
       return true;
     },
   }),
@@ -46,6 +47,7 @@ vi.mock('./queries', () => ({
     },
   }),
   useClaimBadge: () => ({
+    // 배지 수령은 riverId 문자열 하나만 받습니다 — 미션 기록과 계약이 다릅니다.
     mutateAsync: async (riverId: string) => {
       state.claimCalls.push(riverId);
       return { ok: true, is_new: true };
@@ -172,7 +174,7 @@ describe('MissionModal — 열림', () => {
 
     await act(async () => byText('탐방 인증하기')!.click());
     await act(async () => {});
-    expect(state.missionCalls).toEqual(['river-1']);
+    expect(state.missionCalls).toEqual([{ riverId: 'river-1', photoId: undefined }]);
   });
 
   it('잠금 정보를 주지 않으면(단독 렌더) 잠그지 않는다', async () => {

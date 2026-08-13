@@ -12,8 +12,15 @@ export interface MissionProps {
   theme: RiverTheme;
   /** 이미 완료된 미션인가 (서버 기록 + 이번 세션의 낙관적 상태 합산) */
   done: boolean;
-  /** 미션을 방금 끝냈을 때 한 번 호출 */
-  onComplete: () => void;
+  /**
+   * 미션을 방금 끝냈을 때 한 번 호출.
+   *
+   * 사진을 찍어 저장한 미션(온천천·대천천)은 그 photo id 를 넘깁니다 —
+   * 호출부는 이것을 river_missions.photo_id 로 함께 기록해야 사진이 미션에 묶입니다.
+   * 사진이 없거나(미로그인·촬영 취소) 업로드에 실패한 경우에는 인자 없이 부릅니다.
+   * ⚠️ 사진 실패는 미션 실패가 아닙니다 — 아이는 사진 없이도 미션을 끝낼 수 있어야 합니다.
+   */
+  onComplete: (photoId?: string | null) => void;
 }
 
 export function MissionPanel({

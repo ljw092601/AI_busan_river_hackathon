@@ -39,6 +39,16 @@ export function MissionStep(props: MissionProps) {
 
 export type { MissionProps } from './MissionPanel';
 export { MissionPanel, MissionDoneNote } from './MissionPanel';
+export {
+  useMissionPhoto,
+  MissionPhotoPending,
+  MissionPhotoFailure,
+  MissionPhotoThumb,
+  MissionPhotoSignedOutNote,
+  OTTER_PHOTO_TAG,
+  OBSERVE_LOG_PHOTO_TAG,
+} from './MissionPhoto';
+export type { MissionPhotoController, MissionPhotoStatus } from './MissionPhoto';
 export { AcknowledgeMission } from './AcknowledgeMission';
 export { CollectMission } from './CollectMission';
 export { ObserveLogMission } from './ObserveLogMission';

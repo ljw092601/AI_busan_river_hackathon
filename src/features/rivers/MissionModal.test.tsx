@@ -22,12 +22,36 @@ declare global {
 
 const state = vi.hoisted(() => ({
   loggedIn: true,
-  missionCalls: [] as string[],
+  // ★ 사진 미션은 photoId 를 함께 실어 보냅니다. 문자열만 받던 옛 계약이 아닙니다.
+  missionCalls: [] as (string | { riverId: string; photoId?: string | null })[],
   quizCalls: [] as { quizId: string; selectedIdx: number; isCorrect: boolean }[],
   claimCalls: [] as string[],
   claimResult: { ok: true, is_new: true } as { ok: boolean; reason?: string; is_new?: boolean },
   missionThrows: false,
   celebrations: 0,
+  photoCalls: [] as { missionTag?: string | null }[],
+}));
+
+/**
+ * jsdom에는 카메라도, Storage도 없습니다.
+ * 온천천(tap_target)·대천천(observe_log)은 이제 실제로 촬영을 시도하므로
+ * (@/lib/photos → @/lib/image → <input type=file>, @/lib/supabase)
+ * 여기서 막지 않으면 파일 선택창이 영영 응답하지 않아 미션이 끝나지 않습니다.
+ * 촬영 자체의 성공·취소·실패 경로는 missions/MissionPhoto.test.tsx가 봅니다.
+ */
+vi.mock('@/lib/photos', () => ({
+  captureAndUpload: async (opts: { missionTag?: string | null }) => {
+    state.photoCalls.push({ missionTag: opts.missionTag });
+    return {
+      photoId: 'photo-1',
+      storagePath: 'user-1/photo-1.jpg',
+      previewUrl: 'blob:preview',
+      width: 800,
+      height: 600,
+      byteSize: 1234,
+    };
+  },
+  describePhotoError: () => '사진 처리 중 문제가 생겼어요.',
 }));
 
 vi.mock('@/lib/session', () => ({
@@ -41,9 +65,9 @@ vi.mock('@/lib/session', () => ({
 
 vi.mock('./queries', () => ({
   useCompleteMission: () => ({
-    mutateAsync: async (riverId: string) => {
+    mutateAsync: async (input: string | { riverId: string; photoId?: string | null }) => {
       if (state.missionThrows) throw new Error('offline');
-      state.missionCalls.push(riverId);
+      state.missionCalls.push(input);
       return state.loggedIn;
     },
   }),
@@ -81,6 +105,7 @@ beforeEach(() => {
   state.claimResult = { ok: true, is_new: true };
   state.missionThrows = false;
   state.celebrations = 0;
+  state.photoCalls = [];
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -273,7 +298,7 @@ describe('MissionModal — 하천마다 다른 구성', () => {
 });
 
 describe('STEP 1 미션 — kind별 동작', () => {
-  it('tap_target: 대상을 탭하면 완료된다 (움직임과 무관하게)', async () => {
+  it('tap_target: 대상을 탭하면 촬영이 끝난 뒤 완료된다 (움직임과 무관하게)', async () => {
     const river = makeRiver({
       missionKind: 'tap_target',
       missionConfig: { emoji: '🦦', label: '클릭해서 찰칵!', done: '📸 촬영 완성!' },
@@ -281,7 +306,10 @@ describe('STEP 1 미션 — kind별 동작', () => {
     await render(<MissionModal river={river} onClose={() => {}} />);
 
     await click(byText('클릭해서 찰칵!')!);
-    expect(state.missionCalls).toEqual(['river-1']);
+    expect(state.photoCalls).toEqual([{ missionTag: 'oncheoncheon_otter' }]);
+    // ★ 업로드된 사진 id 가 미션 기록까지 실려 가야 합니다.
+    //   여기서 photoId 가 빠지면 사진은 저장되는데 미션에는 안 붙는 상태가 됩니다.
+    expect(state.missionCalls).toEqual([{ riverId: 'river-1', photoId: 'photo-1' }]);
     expect(container.textContent).toContain('📸 촬영 완성!');
   });
 
@@ -298,7 +326,7 @@ describe('STEP 1 미션 — kind별 동작', () => {
     expect(container.textContent).toContain('2 / 3');
 
     await click(byText('🥫')!);
-    expect(state.missionCalls).toEqual(['river-1']);
+    expect(state.missionCalls).toEqual([{ riverId: 'river-1', photoId: undefined }]);
     expect(container.textContent).toContain('🧹 수거 완료!');
   });
 
@@ -339,7 +367,7 @@ describe('STEP 1 미션 — kind별 동작', () => {
     // 앞뒤 공백이 붙어도 통과해야 합니다 (모바일 키보드에서 흔합니다).
     await typeInto(input, '  복개천 ');
     await click(byText('제출')!);
-    expect(state.missionCalls).toEqual(['river-1']);
+    expect(state.missionCalls).toEqual([{ riverId: 'river-1', photoId: undefined }]);
     alertSpy.mockRestore();
   });
 
@@ -380,7 +408,8 @@ describe('STEP 1 미션 — kind별 동작', () => {
     expect(byText('📷 일지 등록')!.getAttribute('aria-disabled')).toBe('false');
 
     await click(byText('📷 일지 등록')!);
-    expect(state.missionCalls).toEqual(['river-1']);
+    expect(state.photoCalls).toEqual([{ missionTag: 'daecheon_log' }]);
+    expect(state.missionCalls).toEqual([{ riverId: 'river-1', photoId: 'photo-1' }]);
     expect(container.textContent).toContain('📷 등록 완료');
   });
 });

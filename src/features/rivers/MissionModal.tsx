@@ -177,11 +177,16 @@ export function MissionModal({ river, onClose, lock: lockOverride = null }: Miss
     }
   }
 
-  function handleMissionComplete() {
+  /**
+   * @param photoId 촬영 미션(온천천·대천천)이 업로드에 성공했을 때만 들어옵니다.
+   *   촬영을 건너뛰거나 실패해도 미션 자체는 완료됩니다 — 카메라 권한이 없다는 이유로
+   *   하천 앞까지 걸어온 아이의 진행을 막지 않습니다.
+   */
+  function handleMissionComplete(photoId?: string | null) {
     // 잠긴 상태에서는 미션 컴포넌트를 아예 그리지 않지만, 판정을 한 곳에 모아 둡니다.
     if (gated || missionDone) return;
     setLocalMissionDone(true);
-    void record(() => completeMission.mutateAsync(river.id), true, solved);
+    void record(() => completeMission.mutateAsync({ riverId: river.id, photoId }), true, solved);
   }
 
   function handleQuizAnswer(quiz: QuizView, selectedIdx: number, isCorrect: boolean) {
