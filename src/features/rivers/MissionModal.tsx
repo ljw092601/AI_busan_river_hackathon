@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '@/lib/session';
+// ⚠️ 전체 배럴(@/features/auth)이 아니라 /home 을 씁니다.
+//    전체 배럴은 @/lib/supabase 를 정적 그래프에 끌고 들어오는데, 그 모듈은
+//    VITE_SUPABASE_* 가 없으면 로드 시점에 예외를 던집니다. 이 파일의 테스트는
+//    supabase 를 목킹하지 않으므로 전체 배럴을 쓰면 테스트가 통째로 깨집니다.
+import { useAuthPrompt } from '@/features/auth/home';
 import { celebrate } from './celebrate';
 import { hasCoordinates, lockNote } from './location';
 import { useRiverLocation, useRiverLock } from './LocationContext';
@@ -59,6 +64,7 @@ function badgeReasonMessage(reason: string | undefined): string {
 export function MissionModal({ river, onClose, lock: lockOverride = null }: MissionModalProps): JSX.Element {
   const theme = themeOf(river.theme);
   const { isLoggedIn } = useSession();
+  const authPrompt = useAuthPrompt();
 
   const lock = useRiverLock(river, lockOverride);
   const { position, requestLocation, status } = useRiverLocation();
@@ -311,10 +317,25 @@ export function MissionModal({ river, onClose, lock: lockOverride = null }: Miss
           ) : null}
 
           {!isLoggedIn ? (
-            <p className="text-[11px] leading-relaxed bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3">
-              🔒 지금은 <strong>둘러보기</strong> 중이에요. 로그인하면 진행 상황이 저장돼요 — 지금
-              푼 내용은 이 창을 닫으면 사라집니다.
-            </p>
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 space-y-2">
+              <p className="text-[11px] leading-relaxed">
+                🔒 지금은 <strong>둘러보기</strong> 중이에요. 로그인하면 진행 상황이 저장돼요 — 지금
+                푼 내용은 이 창을 닫으면 사라집니다.
+              </p>
+              {/* 사실만 알려주고 방법을 안 주면 안내가 아니라 통보입니다.
+                  provider 밖(단독 렌더·테스트)에서는 isAvailable=false 라 버튼이 안 뜹니다. */}
+              {authPrompt.isAvailable ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    authPrompt.requestSignIn('지금 푼 내용을 저장하려면 로그인이 필요해요.')
+                  }
+                  className="min-h-[44px] w-full px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all"
+                >
+                  로그인하고 저장하기
+                </button>
+              ) : null}
+            </div>
           ) : null}
 
           {saveFailed ? (

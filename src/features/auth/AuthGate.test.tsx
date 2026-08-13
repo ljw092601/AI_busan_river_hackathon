@@ -126,6 +126,22 @@ describe('AuthGate', () => {
     expect(container.textContent).toContain('받지 않는 것');
   });
 
+  it('★ users 행은 있어도 consent_id가 비어 있으면 동의 화면으로 보낸다', async () => {
+    // record_checkin()은 users ⋈ consents 조인이 성립할 때만 체크인을 받습니다
+    // (0010_store_coordinates.sql). 통과시키면 로그인은 됐는데 아무것도 저장되지 않습니다.
+    h.state.session = { user: { id: 'u1' } };
+    h.state.profile = { id: 'u1', nickname: '온천천탐험대', consent_id: null };
+
+    await render(
+      <AuthGate>
+        <p>{SECRET}</p>
+      </AuthGate>,
+    );
+
+    expect(container.textContent).not.toContain(SECRET);
+    expect(container.textContent).toContain('동의하고 시작하기');
+  });
+
   it('동의 화면은 아이 정보를 받지 않는다는 사실과 학년대역이 선택임을 말한다', async () => {
     h.state.session = { user: { id: 'u1' } };
 

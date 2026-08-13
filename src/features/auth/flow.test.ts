@@ -13,6 +13,7 @@ import {
   buildConsentScope,
   interpretSignUpResult,
   isConsentComplete,
+  isOnboardingComplete,
   validateEmail,
   validateNickname,
   validatePassword,
@@ -126,5 +127,22 @@ describe('동의 항목', () => {
     expect(joined).toContain('이름');
     expect(joined).toContain('좌표');
     expect(joined).toContain('얼굴');
+  });
+});
+
+describe('isOnboardingComplete', () => {
+  it('프로필이 없으면 미완료다', () => {
+    expect(isOnboardingComplete(null)).toBe(false);
+    expect(isOnboardingComplete(undefined)).toBe(false);
+  });
+
+  it('★ 행은 있어도 consent_id가 비면 미완료다', () => {
+    // record_checkin()은 users ⋈ consents 조인이 성립할 때만 체크인을 받습니다.
+    // 이걸 완료로 보면 "로그인은 됐는데 아무것도 저장되지 않는" 계정이 생깁니다.
+    expect(isOnboardingComplete({ consent_id: null })).toBe(false);
+  });
+
+  it('동의가 연결돼 있으면 완료다', () => {
+    expect(isOnboardingComplete({ consent_id: 'c1' })).toBe(true);
   });
 });

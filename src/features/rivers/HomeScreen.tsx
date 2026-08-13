@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { AuthPromptProvider, HeaderAccount, useAuthPrompt } from '@/features/auth/home';
 import { useGeolocation, type GeoPosition } from '@/lib/geo';
 import { useSession } from '@/lib/session';
 import { BadgeModal } from './BadgeModal';
@@ -23,6 +24,15 @@ import { isRiverComplete, type RiverView } from './types';
  * ★ 지도 seam
  *   RiverMap도 같은 이유로 직접 import 하지 않습니다(다른 트랙 소유).
  *   renderMap prop이 있으면 하천 그리드 위에 그리고, 없으면 아무것도 그리지 않습니다.
+ *
+ * ★ 계정 seam
+ *   로그인은 화면 이동이 아니라 **이 화면 위에 얹는 모달**입니다. `/me`로 보내면
+ *   지도·위치 구독·열려 있던 미션이 전부 초기화되고, 보호자는 보던 자리로 돌아오는 법을
+ *   잃습니다. 열림 상태는 AuthPromptProvider가 들고 있고, 자손 어디서든
+ *   `useAuthPrompt().requestSignIn(이유)`로 엽니다 — 주입되는 MissionModal도 같습니다.
+ *   ⚠️ 인증 화면 본체(AuthModal·AccountMenu)는 lazy로 붙습니다. 이 파일이
+ *      `@/lib/supabase`를 정적으로 끌어오면 .env 없는 환경에서 홈 전체가 import 단계에서
+ *      죽습니다. 그래서 `@/features/auth`(무거운 배럴)가 아니라 `.../auth/home`을 씁니다.
  *
  * ★ 위치는 여기서 **한 번만** 구독합니다
  *   useGeolocation()을 화면마다 부르면 watchPosition이 그만큼 늘어 배터리가 빨리 닳고,
@@ -87,6 +97,7 @@ export function HomeScreen({ renderMissionModal, renderMap }: HomeScreenProps) {
   const selectRiver = useCallback((riverId: string) => setOpenRiverId(riverId), []);
 
   return (
+    <AuthPromptProvider>
     <RiverLocationProvider value={location}>
     <div className="min-h-screen flex flex-col justify-between overflow-x-hidden text-slate-800">
       {/* Header */}
@@ -109,19 +120,26 @@ export function HomeScreen({ renderMissionModal, renderMap }: HomeScreenProps) {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setBadgeOpen(true)}
-            className="shrink-0 flex items-center gap-2 px-3 min-h-[44px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-sm"
-          >
-            <span className="text-base" aria-hidden="true">
-              🏅
-            </span>
-            <span className="hidden sm:inline">탐험 배지</span>
-            <span className="bg-amber-500 text-white rounded-full text-xs px-2 py-0.5 ml-0.5">
-              {completedCount}/{rivers.length || 5}
-            </span>
-          </button>
+          {/* 배지 + 계정. 360px에서는 둘 다 라벨을 접고 아이콘/아바타만 남깁니다 —
+              다만 로그인 버튼의 "로그인" 글자는 접지 않습니다(찾지 못하면 없는 것과 같습니다). */}
+          <div className="shrink-0 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setBadgeOpen(true)}
+              className="shrink-0 flex items-center gap-2 px-3 min-h-[44px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-sm"
+            >
+              <span className="text-base" aria-hidden="true">
+                🏅
+              </span>
+              <span className="hidden sm:inline">탐험 배지</span>
+              <span className="bg-amber-500 text-white rounded-full text-xs px-2 py-0.5 ml-0.5">
+                {completedCount}/{rivers.length || 5}
+              </span>
+            </button>
+
+            {/* 로그인 전이면 로그인 버튼, 후면 계정 칩(별명·이메일·로그아웃). */}
+            <HeaderAccount />
+          </div>
         </div>
 
         {/* Tabs */}
@@ -145,12 +163,7 @@ export function HomeScreen({ renderMissionModal, renderMap }: HomeScreenProps) {
       <main className="max-w-5xl mx-auto px-4 py-6 w-full flex-grow">
         <ProgressHero completed={completedCount} total={rivers.length || 5} />
 
-        {!isLoggedIn && (
-          <p className="mb-6 text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 break-keep">
-            <span aria-hidden="true">💡</span> 지금은 둘러보기 상태예요. 로그인하면 미션과 퀴즈
-            기록이 저장되고 배지를 받을 수 있어요.
-          </p>
-        )}
+        {!isLoggedIn && <GuestSaveNotice />}
 
         {/* 진행 상황 쿼리만 실패한 경우에도 useRivers().error가 채워집니다.
             이미 받아둔 하천이 있으면 화면을 통째로 버리지 않고 띠 경고만 붙입니다. */}
@@ -275,6 +288,36 @@ export function HomeScreen({ renderMissionModal, renderMap }: HomeScreenProps) {
       {badgeOpen && <BadgeModal rivers={rivers} onClose={() => setBadgeOpen(false)} />}
     </div>
     </RiverLocationProvider>
+    </AuthPromptProvider>
+  );
+}
+
+/**
+ * 미로그인 안내 띠.
+ *
+ * "저장되지 않는다"고 말하는 자리에 **저장되게 만드는 버튼**이 없으면 그건 안내가 아니라
+ * 통보입니다. 화면을 막지는 않습니다 — 둘러보기는 의도된 상태이고(App.tsx 주석),
+ * 여기서 로그인을 강요하면 "해볼 만한지 먼저 본다"는 흐름 자체가 사라집니다.
+ *
+ * HomeScreen 본체가 AuthPromptProvider를 그리므로, 훅을 쓰려면 이렇게 자식이어야 합니다.
+ */
+function GuestSaveNotice() {
+  const { requestSignIn } = useAuthPrompt();
+
+  return (
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3">
+      <p className="break-keep min-w-0">
+        <span aria-hidden="true">💡</span> 지금은 둘러보기 상태예요. 로그인하면 미션과 퀴즈
+        기록이 저장되고 배지를 받을 수 있어요.
+      </p>
+      <button
+        type="button"
+        onClick={() => requestSignIn('로그인하면 지금까지처럼 둘러본 뒤에도 기록이 남습니다.')}
+        className="shrink-0 min-h-[44px] px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold transition-all"
+      >
+        로그인하고 기록 저장하기
+      </button>
+    </div>
   );
 }
 

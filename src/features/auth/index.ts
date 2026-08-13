@@ -17,6 +17,19 @@
 export { AuthGate } from './AuthGate';
 export type { AuthGateProps } from './AuthGate';
 
+// ─── 홈 화면에 얹는 로그인 (모달) ───────────────────────────────
+// ⚠️ 홈처럼 **정적 import** 하는 쪽은 이 배럴 대신 `@/features/auth/home`을 쓰세요.
+//    이 파일은 useAuth → @/lib/supabase 를 함께 평가하므로 VITE_ 환경변수가 없는
+//    환경(테스트·fresh clone)에서 import 단계에서 throw 합니다. home.ts는 그렇지 않습니다.
+export { AuthPromptProvider, useAuthPrompt } from './AuthPrompt';
+export type { AuthPromptProviderProps, AuthPromptValue } from './AuthPrompt';
+
+export { HeaderAccount } from './HeaderAccount';
+export { AccountMenu } from './AccountMenu';
+
+export { AuthModal } from './AuthModal';
+export type { AuthModalProps } from './AuthModal';
+
 export { SignInScreen } from './SignInScreen';
 export type { SignInScreenProps } from './SignInScreen';
 
@@ -63,6 +76,7 @@ export {
   defaultConsentSelection,
   interpretSignUpResult,
   isConsentComplete,
+  isOnboardingComplete,
   validateEmail,
   validateNickname,
   validatePassword,

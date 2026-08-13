@@ -157,6 +157,25 @@ export function isConsentComplete(selected: Partial<Record<ConsentScopeKey, bool
   return CONSENT_ITEMS.every((item) => !item.required || selected[item.key] === true);
 }
 
+/**
+ * 온보딩이 **실제로** 끝났는가.
+ *
+ * `public.users` 행이 있는 것만으로는 부족합니다. `record_checkin()`은
+ * users ⋈ consents 조인이 성립할 때만 체크인을 받아들이고(0010_store_coordinates.sql),
+ * `consent_id`가 비어 있으면 `{ ok:false, reason:'consent_required' }`로 거부합니다.
+ * 즉 "행은 있는데 동의가 없는" 계정은 로그인된 것처럼 보이면서 아무것도 저장되지 않습니다.
+ * 그 상태를 미완료로 판정해 동의 화면으로 되돌리는 것이 이 함수의 일입니다.
+ *
+ * (`revoked_at`·`expires_at`까지는 여기서 판정하지 않습니다 — 클라이언트에는 consents
+ *  SELECT 권한이 없어 읽을 수 없고, 앱 안에 철회 경로도 없습니다. 운영자가 철회한 계정은
+ *  체크인 시점에 `consent_required`로 드러납니다.)
+ */
+export function isOnboardingComplete(
+  profile: { consent_id: string | null } | null | undefined,
+): boolean {
+  return Boolean(profile?.consent_id);
+}
+
 /** 화면에 그대로 쓰는 "무엇을 받지 않는가" 목록 — PLAN.md §5.2의 집행이자 광고입니다. */
 export const NOT_COLLECTED: readonly string[] = [
   '아이의 이름·나이·학교·연락처 — 입력란 자체가 없습니다',

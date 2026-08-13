@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useSession } from '@/lib/session';
 import { ConsentScreen } from './ConsentScreen';
 import { ErrorNotice } from './ErrorNotice';
+import { isOnboardingComplete } from './flow';
 import { SignInScreen } from './SignInScreen';
 import { SignOutButton } from './SignOutButton';
 import { useGuardianProfile } from './useAuth';
@@ -16,6 +17,7 @@ import s from './auth.module.css';
  * 세션 없음               → <SignInScreen>
  * 세션 있음 · 프로필 확인 중 → 로딩
  * 세션 있음 · 프로필 없음   → <ConsentScreen>   ★ 가입 직후도, 인증 후 첫 진입도 여기로
+ * 세션 있음 · 동의 미연결    → <ConsentScreen>   ★ consent_id가 비면 체크인이 거부됩니다
  * 세션 있음 · 프로필 있음   → children
  * ```
  *
@@ -89,7 +91,11 @@ export function AuthGate({ children, requireProfile = true, loadingFallback }: A
     );
   }
 
-  if (!profile.profile) {
+  // 행이 없을 때뿐 아니라 **동의가 연결되지 않은 행**도 온보딩으로 보냅니다.
+  // consent_id가 비어 있으면 record_checkin()이 consent_required로 거부하므로
+  // 통과시키면 "로그인은 됐는데 아무것도 저장되지 않는" 계정이 됩니다.
+  // ensureGuardianProfile()의 (b) 갈래가 별명을 지우지 않고 동의만 붙여 줍니다.
+  if (!isOnboardingComplete(profile.profile)) {
     return <ConsentScreen />;
   }
 
