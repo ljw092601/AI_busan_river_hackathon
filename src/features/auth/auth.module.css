@@ -1,0 +1,387 @@
+/* 보호자 인증 화면 공용 스타일.
+   대상은 성인이지만 상황은 "한 손에 아이 손, 한 손에 폰"입니다 —
+   터치 타깃은 var(--touch) 이상, 본문 16px 이상을 유지합니다. */
+
+.screen {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.brand {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--c-river);
+  word-break: keep-all;
+}
+
+.lede {
+  margin: 0 0 1.5rem;
+  color: var(--c-ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-lg);
+  padding: 1.25rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.optional {
+  margin-left: 0.375rem;
+  padding: 0.0625rem 0.4rem;
+  border-radius: 999px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  color: var(--c-ink-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.input {
+  min-height: var(--touch);
+  padding: 0.625rem 0.75rem;
+  border: 2px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font: inherit;
+  font-size: 1rem; /* 16px 미만이면 iOS가 입력 시 화면을 확대합니다 */
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--c-sun);
+  outline-offset: 1px;
+  border-color: var(--c-water);
+}
+
+.input[aria-invalid='true'] {
+  border-color: #b4483c;
+}
+
+.help {
+  margin: 0;
+  color: var(--c-ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.fieldError {
+  margin: 0;
+  color: #b4483c;
+  font-size: 0.875rem;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.primary {
+  min-height: calc(var(--touch) + 6px);
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-river);
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.primary:disabled {
+  background: var(--c-tier-1);
+  cursor: progress;
+}
+
+.primary:focus-visible,
+.secondary:focus-visible,
+.link:focus-visible {
+  outline: 3px solid var(--c-sun);
+  outline-offset: 2px;
+}
+
+.secondary {
+  min-height: var(--touch);
+  padding: 0.5rem 0.875rem;
+  border: 2px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.link {
+  border: none;
+  background: none;
+  padding: 0.5rem;
+  color: var(--c-water);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  color: var(--c-ink-soft);
+  font-size: 0.9375rem;
+  flex-wrap: wrap;
+}
+
+/* 오류·안내 배너 — 색만으로 구분하지 않도록 아이콘과 굵은 제목을 함께 씁니다 */
+.alert {
+  display: flex;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--r-md);
+  border: 1px solid;
+  word-break: keep-all;
+}
+
+.alertError {
+  border-color: #e3b7b1;
+  background: #fdf1ef;
+  color: #7a2d24;
+}
+
+.alertInfo {
+  border-color: #b8d4c4;
+  background: #eef6f1;
+  color: #1d4735;
+}
+
+.alertIcon {
+  flex: none;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.alertBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.alertTitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.alertHint {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.alertDetail {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--c-ink-soft);
+  overflow-wrap: anywhere;
+}
+
+/* ── 동의 화면 ─────────────────────────────────────────────────────────── */
+
+.section {
+  margin-top: 1.75rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  word-break: keep-all;
+}
+
+.factList {
+  margin: 0;
+  padding-left: 1.125rem;
+  color: var(--c-ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.factList li {
+  word-break: keep-all;
+}
+
+.notCollected {
+  border-left: 4px solid var(--c-river);
+  padding: 0.75rem 0 0.75rem 0.875rem;
+  background: #f1f7f3;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+
+.consentItem {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border: 2px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  cursor: pointer;
+}
+
+.consentItem + .consentItem {
+  margin-top: 0.625rem;
+}
+
+.consentChecked {
+  border-color: var(--c-river);
+  background: #f3f8f5;
+}
+
+.checkbox {
+  flex: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin: 0.125rem 0 0;
+  accent-color: var(--c-river);
+}
+
+.consentLabel {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.consentDetail {
+  margin: 0.25rem 0 0;
+  color: var(--c-ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+/* 아바타 */
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  border: 2px solid var(--c-line);
+  font-size: 1.75rem;
+}
+
+/* 학년대역 선택 — 3열, "나중에" 포함 */
+.bandRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.band {
+  min-height: calc(var(--touch) + 4px);
+  padding: 0.5rem 0.25rem;
+  border: 2px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.band[aria-pressed='true'] {
+  border-color: var(--c-water);
+  background: #eef4f8;
+  color: var(--c-water);
+}
+
+.band:focus-visible {
+  outline: 3px solid var(--c-sun);
+  outline-offset: 2px;
+}
+
+.submitRow {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── 게이트 상태 ───────────────────────────────────────────────────────── */
+
+.pending {
+  display: grid;
+  place-items: center;
+  min-height: 50dvh;
+  padding: 2rem;
+  color: var(--c-ink-soft);
+  font-size: 0.9375rem;
+}
+
+.accountBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+}
+
+.accountName {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.accountMeta {
+  color: var(--c-ink-soft);
+  font-size: 0.875rem;
+}
+
+.accountSpacer {
+  flex: 1;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}

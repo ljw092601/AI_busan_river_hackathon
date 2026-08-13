@@ -1,0 +1,25 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# 환경변수 — 절대 커밋 금지
+.env
+.env.local
+.env*.local
+
+# Supabase
+.supabase
+supabase/.temp
+
+# 에디터/OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+
+# 로그
+npm-debug.log*
+yarn-error.log*
+*.log

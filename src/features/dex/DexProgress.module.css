@@ -1,0 +1,154 @@
+/* DexProgress — 컬렉션 진척도. 리더보드 없음 (PLAN.md §6.3). */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 0 1rem;
+  padding: 1rem;
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+  box-shadow: 0 1px 3px rgb(28 43 36 / 8%);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--c-ink-soft);
+}
+
+.headline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.125rem;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.big {
+  font-size: 2.25rem;
+  line-height: 1.1;
+  color: var(--c-river);
+}
+
+.slash {
+  color: var(--c-ink-soft);
+  margin: 0 0.125rem;
+}
+
+.bar {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: #e6ebe5;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--c-river);
+  transition: width 0.4s ease;
+}
+
+.barFillWater {
+  background: var(--c-water);
+}
+
+.cheer {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--c-ink-soft);
+  word-break: keep-all;
+}
+
+/* ─── 트랙별 (보장/도전) ───────────────────────────────────── */
+
+.trackRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.trackCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.625rem 0.5rem;
+  border-radius: var(--r-md);
+  background: #f2f6f1;
+  text-align: center;
+}
+
+.trackName {
+  font-size: 0.875rem;
+  color: var(--c-ink-soft);
+  word-break: keep-all;
+}
+
+.trackCount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-river);
+}
+
+/* ─── 세트 ─────────────────────────────────────────────────── */
+
+.sets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--c-line);
+}
+
+.setsTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.setsMeta {
+  margin-left: auto;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--c-ink-soft);
+}
+
+.setList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setItem {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 40%) 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.setLabel {
+  font-size: 0.9375rem;
+  word-break: keep-all;
+}
+
+.setCount {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--c-ink-soft);
+  white-space: nowrap;
+}
+
+.setCountDone {
+  color: var(--c-river);
+}

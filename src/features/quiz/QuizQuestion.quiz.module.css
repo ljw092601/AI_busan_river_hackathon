@@ -1,0 +1,167 @@
+/* 문항 · 보기.
+   보기 버튼은 최소 높이 calc(var(--touch) + 12px) — 걸으면서 한 손으로 누르는 상황을 가정합니다.
+   본문 16px 이상, 보기 글자는 17px. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.question {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  font-weight: 700;
+  word-break: keep-all; /* 한글 단어 중간에서 끊기지 않게 */
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* O/X는 두 개뿐이라 가로로 나란히 — 좁은 화면에서도 2열은 넉넉합니다 */
+.optionsOX {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.option,
+.optionOX {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(var(--touch) + 12px);
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.optionOX {
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  min-height: calc(var(--touch) * 2);
+  text-align: center;
+}
+
+.option:focus-visible,
+.optionOX:focus-visible {
+  outline: 3px solid var(--c-sun);
+  outline-offset: 2px;
+}
+
+.option[aria-disabled='true'],
+.optionOX[aria-disabled='true'] {
+  cursor: default;
+}
+
+/* 번호(3지선다) / ⭕❌ 기호(O/X) */
+.marker {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: var(--c-bg);
+  color: var(--c-ink-soft);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.optionOX .marker {
+  min-width: auto;
+  height: auto;
+  background: none;
+  font-size: 2rem;
+}
+
+.label {
+  min-width: 0;
+  word-break: keep-all;
+}
+
+/* 선택 상태 — 테두리 굵기까지 함께 바뀌어 색만으로 구분되지 않습니다 */
+.selected {
+  border-color: var(--c-water);
+  background: #eef4f8;
+}
+
+.correct {
+  border-color: var(--c-river);
+  background: #e9f3ec;
+}
+
+.miss {
+  border-color: var(--c-ink-soft);
+  background: var(--c-bg);
+}
+
+/* 정답 / 내가 고른 답 배지 — 아이콘 + 글자 병행 */
+.tag {
+  flex: none;
+  margin-left: auto;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--c-surface);
+  border: 1px solid currentColor;
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.correct .tag {
+  color: var(--c-river);
+}
+
+.miss .tag {
+  color: var(--c-ink-soft);
+}
+
+.optionOX .tag {
+  margin-left: 0;
+}
+
+.feedback {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.feedback:empty {
+  display: none;
+}
+
+.feedbackCorrect {
+  color: var(--c-river);
+}
+
+.feedbackMiss {
+  color: var(--c-water);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}

@@ -1,0 +1,171 @@
+/* DexContainer — 로딩·오류·미로그인 상태의 실제 화면.
+   하천변 모바일에서 보므로 터치 목표 44px, 가로 스크롤 없음을 지킵니다. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ─── 미로그인 안내 ─────────────────────────────────────────── */
+
+.banner {
+  margin: 1rem 1rem 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-md);
+  background: #eef4f8;
+  color: var(--c-ink);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+/* ─── 부분 실패 경고 (종은 왔고 내 기록만 실패) ─────────────── */
+
+.warn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 1rem 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid #f0dcb4;
+  border-radius: var(--r-md);
+  background: #fdf6e8;
+}
+
+.warnText {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--c-ink);
+  word-break: keep-all;
+}
+
+.warnBtn {
+  min-height: var(--touch);
+  padding: 0 1rem;
+  border: 1px solid var(--c-sun);
+  border-radius: var(--r-sm);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.warnBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ─── 로딩 ──────────────────────────────────────────────────── */
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem 1rem 2rem;
+}
+
+.loadingText {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: var(--c-ink-soft);
+}
+
+.skelGrid {
+  display: grid;
+  /* DexGrid와 같은 셀 규격 — 데이터가 오면 레이아웃이 튀지 않습니다. */
+  grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skelCell {
+  height: 128px;
+  border-radius: var(--r-md);
+  background: linear-gradient(100deg, #e9eee9 30%, #f4f7f3 50%, #e9eee9 70%);
+  background-size: 300% 100%;
+  animation: skelShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skelShimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skelCell {
+    animation: none;
+  }
+}
+
+/* ─── 오류 · 빈 상태 ────────────────────────────────────────── */
+
+.notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.noticeEmoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.noticeTitle {
+  margin: 0;
+  font-size: 1.375rem;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.noticeBody {
+  max-width: 26rem;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--c-ink-soft);
+  word-break: keep-all;
+}
+
+.retry {
+  min-height: var(--touch);
+  margin-top: 0.5rem;
+  padding: 0 1.75rem;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-river);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retry:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* 어른(교사·개발자)용 원인 문자열. 아이 문구와 섞이지 않게 눈에 띄지 않게 둡니다. */
+.noticeDetail {
+  max-width: 26rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--c-ink-soft);
+  opacity: 0.75;
+  word-break: break-word;
+}

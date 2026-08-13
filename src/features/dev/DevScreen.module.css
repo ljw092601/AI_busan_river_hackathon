@@ -1,0 +1,106 @@
+.root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem 1rem 4rem;
+  font-size: 14px;
+}
+
+.header { margin-bottom: 1rem; }
+.title { font-size: 1.25rem; margin: 0 0 .25rem; }
+.warn {
+  margin: 0;
+  padding: .5rem .7rem;
+  background: #fff4e5;
+  border-left: 3px solid #e08a00;
+  color: #6b4400;
+  border-radius: 4px;
+}
+
+.panel {
+  border: 1px solid #dcdfe4;
+  border-radius: 8px;
+  padding: .9rem 1rem;
+  margin-bottom: 1rem;
+  background: #fff;
+}
+.panelTitle { font-size: 1rem; margin: 0 0 .7rem; }
+
+.row { display: flex; flex-wrap: wrap; gap: .5rem; margin: .5rem 0; }
+.field { display: flex; flex-direction: column; gap: .2rem; font-size: 12px; color: #556; }
+
+.input {
+  padding: .5rem .6rem;
+  border: 1px solid #c7ccd4;
+  border-radius: 6px;
+  font: inherit;
+  min-width: 8rem;
+  flex: 1 1 8rem;
+}
+
+.btn, .btnPrimary, .btnDanger {
+  padding: .55rem .9rem;
+  border-radius: 6px;
+  border: 1px solid #c7ccd4;
+  background: #f6f7f9;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.btnPrimary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+.btnDanger  { background: #fdeaea; border-color: #e0a0a0; color: #8a1f1f; }
+.btn:disabled, .btnPrimary:disabled, .btnDanger:disabled { opacity: .45; cursor: not-allowed; }
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .3rem 0;
+  border-bottom: 1px dashed #e6e8ec;
+}
+.kv code { font-size: 12px; word-break: break-all; }
+
+.spotList { display: grid; gap: .4rem; }
+.spot, .spotOn {
+  display: flex;
+  justify-content: space-between;
+  gap: .6rem;
+  align-items: baseline;
+  text-align: left;
+  padding: .6rem .7rem;
+  border-radius: 6px;
+  border: 1px solid #dcdfe4;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.spotOn { border-color: #1f6feb; background: #eaf2ff; }
+.spot span, .spotOn span { font-size: 12px; color: #667; white-space: nowrap; }
+
+.result { margin: .6rem 0; }
+.resultLabel { font-size: 12px; color: #667; margin-bottom: .2rem; }
+
+/* 넓은 JSON이 페이지 자체를 가로로 밀지 않도록 여기서만 스크롤합니다. */
+.pre {
+  margin: 0;
+  padding: .6rem .7rem;
+  background: #0f1115;
+  color: #d6deeb;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-x: auto;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.note { font-size: 12px; color: #667; margin: .5rem 0 0; line-height: 1.5; }
+.err  { color: #b3261e; }
+
+@media (prefers-color-scheme: dark) {
+  .panel { background: #16181d; border-color: #2c3038; }
+  .input, .btn, .spot, .spotOn { background: #1c1f26; border-color: #2c3038; color: #e6e8ec; }
+  .spotOn { background: #17253d; border-color: #1f6feb; }
+  .kv { border-bottom-color: #2c3038; }
+  .warn { background: #2a2110; color: #f0c674; }
+}

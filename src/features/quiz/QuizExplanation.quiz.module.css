@@ -1,0 +1,41 @@
+/* 해설 카드. 정답/오답에 따라 색을 바꾸지 않습니다 —
+   오답일 때만 다른 색이면 그 자체가 "틀렸다"는 낙인이 됩니다. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.125rem;
+  border-radius: var(--r-md);
+  background: #fdf6e7;
+  border: 1px solid #f0dfb8;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.icon {
+  font-size: 1.375rem;
+  line-height: 1;
+}
+
+.body {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.reward {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #9a6b17;
+}

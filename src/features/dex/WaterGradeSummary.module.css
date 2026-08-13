@@ -1,0 +1,208 @@
+/* WaterGradeSummary — 구간별 수질 요약 (PLAN.md §7.4).
+   색으로 '나쁨'을 표시하지 않습니다. 빨강 경고색을 쓰지 않는 것도 설계입니다. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin: 0 1rem;
+  padding: 1.125rem 1rem 1.25rem;
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+  box-shadow: 0 1px 3px rgb(28 43 36 / 8%);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.section {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--c-ink-soft);
+}
+
+/* ─── 등급별 줄 ────────────────────────────────────────────── */
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'grade count'
+    'names names';
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--r-md);
+  background: #f4f7f3;
+}
+
+/* 아직 못 찾은 등급 = 실패가 아니라 '다음 목표'.
+   흐리게 죽이지 않고, 목표처럼 보이게 점선 테두리를 씁니다. */
+.rowTarget {
+  background: var(--c-surface);
+  border: 1px dashed var(--c-line);
+}
+
+.cellGrade {
+  grid-area: grade;
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  min-width: 0;
+}
+
+.gradeTop {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.stars {
+  font-size: 0.9375rem;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+
+.gradeLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.gradeNote {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--c-ink-soft);
+  word-break: keep-all;
+}
+
+.cellCount {
+  grid-area: count;
+  display: flex;
+  align-items: baseline;
+  gap: 0.0625rem;
+  white-space: nowrap;
+}
+
+.count {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--c-river);
+}
+
+.rowTarget .count {
+  color: var(--c-ink-soft);
+}
+
+.countUnit {
+  font-size: 0.9375rem;
+  color: var(--c-ink-soft);
+}
+
+.cellNames {
+  grid-area: names;
+  min-width: 0;
+}
+
+.names {
+  display: block;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--c-river);
+  word-break: keep-all;
+}
+
+.namesEmpty {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--c-ink-soft);
+  word-break: keep-all;
+}
+
+/* ─── 판정 ─────────────────────────────────────────────────── */
+
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1rem;
+  border-radius: var(--r-md);
+  background: #e9f2ec;
+  border-left: 6px solid var(--c-river);
+}
+
+/* 아직 판정 전 — 물빛으로. '실패'가 아니라 '진행 중'입니다. */
+.verdictPending {
+  background: #e9f0f5;
+  border-left-color: var(--c-water);
+}
+
+.verdictHead {
+  margin: 0;
+  font-size: 1.1875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.verdictBody {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+/* 다음 목표 — 이 한 줄이 이 화면의 결론입니다. */
+.hope {
+  margin: 0.125rem 0 0;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--r-sm);
+  background: var(--c-surface);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.55;
+  color: var(--c-river);
+  word-break: keep-all;
+}
+
+.footNote {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--c-ink-soft);
+  word-break: keep-all;
+}
+
+.footNote strong {
+  color: var(--c-ink);
+}
+
+.method {
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--c-line);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--c-ink-soft);
+  word-break: keep-all;
+}
