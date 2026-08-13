@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { HomeScreen } from '@/features/rivers';
 import { MissionModal } from '@/features/rivers/MissionModal';
+import { RiverMap } from '@/features/map';
 import { DexContainer } from '@/features/dex';
 import { AuthGate } from '@/features/auth';
 import { DevScreen } from '@/features/dev/DevScreen';
@@ -24,6 +25,15 @@ export const router = createBrowserRouter([
       <HomeScreen
         renderMissionModal={(river, onClose) => (
           <MissionModal river={river} onClose={onClose} />
+        )}
+        renderMap={(a) => (
+          <RiverMap
+            rivers={a.rivers}
+            position={a.position}
+            selectedRiverId={a.selectedRiverId}
+            onSelectRiver={a.onSelectRiver}
+            onRequestLocation={a.onRequestLocation}
+          />
         )}
       />
     ),

@@ -1,0 +1,155 @@
+/*
+ * 지도 컨테이너와 오버레이 스타일.
+ *
+ * ★ 왜 Tailwind가 아니라 CSS Module인가
+ *   커스텀 오버레이의 DOM은 React가 아니라 document.createElement로 직접 만듭니다.
+ *   Tailwind 클래스 문자열을 소스에 리터럴로 적으면 스캐너가 잡긴 하지만,
+ *   말풍선 꼬리·펄스 애니메이션처럼 의사요소/키프레임이 필요한 부분이 있어
+ *   여기만 CSS Module로 두었습니다. React가 그리는 껍데기(로딩/에러/버튼)는 Tailwind입니다.
+ *
+ * ⚠️ .frame의 height가 이 파일에서 가장 중요합니다.
+ *    카카오맵은 컨테이너의 실제 픽셀 높이를 읽어 타일을 그립니다. 높이가 0이면
+ *    에러도 없이 아무것도 안 보입니다("지도가 안 떠요"의 대부분이 이것).
+ *    부모의 높이에 의존하지 않도록 여기서 명시적으로 정합니다.
+ */
+
+.frame {
+  position: relative;
+  width: 100%;
+  height: clamp(260px, 44vh, 420px);
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #eef2ef;
+  /* 지도 위에서 손가락을 움직일 때 페이지가 같이 끌려가지 않도록 */
+  touch-action: pan-x pan-y;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* ── 하천 핀 ─────────────────────────────────────────────── */
+
+.pin {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px; /* 아이 손가락 기준 탭 타깃 */
+  padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+  color: #1e293b;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.pin:hover {
+  transform: scale(1.03);
+}
+
+.pin:focus-visible {
+  outline: 3px solid #10b981;
+  outline-offset: 2px;
+}
+
+.pinIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.pinText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+
+.pinName {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pinNote {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* 반경 안 — 지금 미션을 열 수 있는 상태 */
+.pinInside {
+  border-color: #059669;
+  background: #ecfdf5;
+}
+
+.pinInside .pinIcon {
+  background: #d1fae5;
+}
+
+.pinInside .pinNote {
+  color: #047857;
+}
+
+/* 선택된 하천 */
+.pinSelected {
+  border-color: #0f172a;
+  transform: scale(1.06);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.28);
+}
+
+.pinSelected:hover {
+  transform: scale(1.06);
+}
+
+/* ── 내 위치 ─────────────────────────────────────────────── */
+
+.me {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #2563eb;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4), 0 4px 10px rgba(15, 23, 42, 0.3);
+}
+
+.me::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
+  border: 2px solid rgba(37, 99, 235, 0.5);
+  animation: mePulse 2s ease-out infinite;
+}
+
+@keyframes mePulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .me::after {
+    animation: none;
+    opacity: 0.35;
+  }
+  .pin {
+    transition: none;
+  }
+}

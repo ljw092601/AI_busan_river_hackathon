@@ -23,3 +23,6 @@ Thumbs.db
 npm-debug.log*
 yarn-error.log*
 *.log
+
+# TypeScript 증분 빌드 캐시
+*.tsbuildinfo

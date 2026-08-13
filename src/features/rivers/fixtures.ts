@@ -33,6 +33,11 @@ export function makeRiver(overrides: Partial<RiverView> = {}): RiverView {
     detailedHistory: '',
     detailedEcology: '',
 
+    // 온천천 시민공원 근사 좌표. 잠금 테스트는 이 값을 기준으로 거리를 계산합니다.
+    lat: 35.2049,
+    lng: 129.0784,
+    radiusM: 1500,
+
     missionKind,
     missionTitle: '온천천 수달 카메라스냅 미션',
     missionBody: '수달을 찾아 사진을 찍어 주세요.',

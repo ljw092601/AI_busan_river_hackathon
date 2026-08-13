@@ -1,7 +1,11 @@
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useGeolocation, type GeoPosition } from '@/lib/geo';
 import { useSession } from '@/lib/session';
 import { BadgeModal } from './BadgeModal';
 import { Encyclopedia } from './Encyclopedia';
+import { LocationBanner } from './LocationBanner';
+import { RiverLocationProvider, accuracyPoorOf, type RiverLocationValue } from './LocationContext';
+import { unlockedCount, withLocks } from './location';
 import { ProgressHero } from './ProgressHero';
 import { RiverCard } from './RiverCard';
 import { useRivers } from './queries';
@@ -15,10 +19,29 @@ import { isRiverComplete, type RiverView } from './types';
  *   "어떤 하천이 열려 있는가"는 여기서 들고, 실제 모달은 renderMissionModal
  *   prop으로 주입받습니다. prop이 없으면 아무것도 그리지 않으므로
  *   이 화면만 따로 띄워도 정상 동작합니다.
+ *
+ * ★ 지도 seam
+ *   RiverMap도 같은 이유로 직접 import 하지 않습니다(다른 트랙 소유).
+ *   renderMap prop이 있으면 하천 그리드 위에 그리고, 없으면 아무것도 그리지 않습니다.
+ *
+ * ★ 위치는 여기서 **한 번만** 구독합니다
+ *   useGeolocation()을 화면마다 부르면 watchPosition이 그만큼 늘어 배터리가 빨리 닳고,
+ *   두 구독이 서로 다른 좌표를 들고 있으면 카드와 모달이 다른 거리를 말합니다.
+ *   그래서 여기서 한 번 부르고, 아래로는 prop과 RiverLocationProvider로만 내려보냅니다.
+ *
+ * ⚠️ 잠금은 전부 **클라이언트 판정**입니다(types.ts lockStateOf 주석 참고).
+ *    우회할 수 있고, 그래서 화면 어디에도 "인증"이라고 쓰지 않습니다.
  */
 
 export interface HomeScreenProps {
   renderMissionModal?: (river: RiverView, onClose: () => void) => ReactNode;
+  renderMap?: (args: {
+    rivers: RiverView[];
+    position: GeoPosition | null;
+    selectedRiverId: string | null;
+    onSelectRiver: (riverId: string) => void;
+    onRequestLocation: () => void;
+  }) => ReactNode;
 }
 
 type TabKey = 'missions' | 'guide';
@@ -33,7 +56,7 @@ const TAB_BASE =
 const TAB_ACTIVE = 'bg-white/20 text-white';
 const TAB_IDLE = 'hover:bg-white/10 text-emerald-100';
 
-export function HomeScreen({ renderMissionModal }: HomeScreenProps) {
+export function HomeScreen({ renderMissionModal, renderMap }: HomeScreenProps) {
   const [tab, setTab] = useState<TabKey>('missions');
   const [openRiverId, setOpenRiverId] = useState<string | null>(null);
   const [badgeOpen, setBadgeOpen] = useState(false);
@@ -41,13 +64,30 @@ export function HomeScreen({ renderMissionModal }: HomeScreenProps) {
   const { rivers, isLoading, error, refetch } = useRivers();
   const { isLoggedIn } = useSession();
 
+  // ★ 앱 전체에서 유일한 watchPosition 구독.
+  const geo = useGeolocation();
+
+  const location: RiverLocationValue = {
+    status: geo.status,
+    position: geo.position,
+    message: geo.message,
+    accuracyPoor: accuracyPoorOf(geo.position),
+    requestLocation: geo.start,
+  };
+
+  // 위치를 받은 뒤에만 가까운 순으로 정렬됩니다(위치가 없으면 원래 순서 유지).
+  const cards = useMemo(() => withLocks(rivers, geo.position), [rivers, geo.position]);
+  const nearest = geo.position && cards.length > 0 ? cards[0] : null;
+
   const completedCount = rivers.filter((r) => isRiverComplete(r) || r.badgeEarned).length;
   const openRiver = rivers.find((r) => r.id === openRiverId) ?? null;
 
   const closeMission = useCallback(() => setOpenRiverId(null), []);
   const openMission = useCallback((river: RiverView) => setOpenRiverId(river.id), []);
+  const selectRiver = useCallback((riverId: string) => setOpenRiverId(riverId), []);
 
   return (
+    <RiverLocationProvider value={location}>
     <div className="min-h-screen flex flex-col justify-between overflow-x-hidden text-slate-800">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-sm">
@@ -155,11 +195,29 @@ export function HomeScreen({ renderMissionModal }: HomeScreenProps) {
           </div>
         ) : tab === 'missions' ? (
           <section>
+            <LocationBanner
+              location={location}
+              nearest={nearest}
+              unlocked={unlockedCount(cards)}
+            />
+
+            {/* 지도 seam — 다른 트랙이 소유합니다. prop이 없으면 아무것도 그리지 않습니다. */}
+            {renderMap
+              ? renderMap({
+                  rivers,
+                  position: geo.position,
+                  selectedRiverId: openRiverId,
+                  onSelectRiver: selectRiver,
+                  onRequestLocation: geo.start,
+                })
+              : null}
+
             <div className="flex justify-between items-end mb-4">
               <div>
                 <h3 className="text-xl font-bold text-slate-800">부산 5대 하천 미션 &amp; 퀴즈</h3>
                 <p className="text-xs text-slate-500 break-keep">
-                  각 하천 카드를 눌러 미션과 퀴즈를 모두 해결하고 달성 배지를 받아보세요!
+                  하천 가까이에 가면 그 하천의 미션과 퀴즈가 열려요. 카드를 누르면 잠겨 있어도
+                  하천 이야기는 읽을 수 있어요.
                 </p>
               </div>
             </div>
@@ -172,8 +230,15 @@ export function HomeScreen({ renderMissionModal }: HomeScreenProps) {
               </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {rivers.map((river) => (
-                  <RiverCard key={river.id} river={river} onOpen={openMission} />
+                {cards.map(({ river, lock, nearest: isNearest }) => (
+                  <RiverCard
+                    key={river.id}
+                    river={river}
+                    onOpen={openMission}
+                    lock={lock}
+                    nearest={isNearest}
+                    accuracy={geo.position?.accuracy ?? null}
+                  />
                 ))}
               </div>
             )}
@@ -205,9 +270,11 @@ export function HomeScreen({ renderMissionModal }: HomeScreenProps) {
         </div>
       </footer>
 
+      {/* 모달도 provider 안입니다 — 주입된 MissionModal이 useRiverLock으로 잠금을 읽습니다. */}
       {openRiver && renderMissionModal ? renderMissionModal(openRiver, closeMission) : null}
       {badgeOpen && <BadgeModal rivers={rivers} onClose={() => setBadgeOpen(false)} />}
     </div>
+    </RiverLocationProvider>
   );
 }
 

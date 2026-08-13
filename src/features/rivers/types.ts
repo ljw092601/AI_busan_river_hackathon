@@ -45,6 +45,12 @@ export interface RiverView {
   detailedHistory: string;
   detailedEcology: string;
 
+  /** 대표 좌표 — ⚠️ 미검증 근사값입니다(0015). 현장 답사 전에는 거리 판정을 신뢰하지 마세요. */
+  lat: number;
+  lng: number;
+  /** 잠금해제 반경(m). 하천은 선인데 점으로 근사하고 있어 1000~1500m로 넉넉합니다. */
+  radiusM: number;
+
   missionKind: MissionKind | null;
   missionTitle: string;
   missionBody: string;
@@ -85,4 +91,37 @@ export function isRiverComplete(r: RiverView): boolean {
 
 export function solvedCount(r: RiverView): number {
   return r.quizzes.filter((q) => r.quizSolvedIds.has(q.id)).length;
+}
+
+/** 위치를 아직 못 받았거나 반경 밖이면 잠금. 위치를 받은 뒤에만 해제됩니다. */
+export interface LockState {
+  locked: boolean;
+  /** 반경까지 남은 거리(m). 반경 안이면 0. 위치를 모르면 null. */
+  remainingM: number | null;
+  distanceM: number | null;
+}
+
+/**
+ * 잠금 판정.
+ *
+ * ⚠️ 이것은 **화면 표시용 판정**입니다. 클라이언트에서 계산하므로 조작할 수 있습니다.
+ *   지금 단계에서 이렇게 두는 이유는 두 가지입니다:
+ *     · 미로그인 방문자도 "가까이 가면 열린다"를 체험할 수 있어야 하고,
+ *     · 잠금해제 자체는 아직 서버에 아무 기록도 남기지 않기 때문입니다.
+ *   미션 완료·퀴즈 정답처럼 **기록이 남는 순간**은 이미 서버 RLS가 지키고 있습니다.
+ *   위치까지 서버로 강제하려면 record_checkin(verify_checkin)을 잠금해제 조건에 넣으세요 —
+ *   그 함수는 이미 있고 authenticated 에게 열려 있습니다.
+ */
+export function lockStateOf(
+  r: RiverView,
+  pos: { lat: number; lng: number } | null,
+  distanceMeters: (aLat: number, aLng: number, bLat: number, bLng: number) => number,
+): LockState {
+  if (!pos) return { locked: true, remainingM: null, distanceM: null };
+  const d = distanceMeters(pos.lat, pos.lng, r.lat, r.lng);
+  return {
+    locked: d > r.radiusM,
+    remainingM: Math.max(0, Math.ceil(d - r.radiusM)),
+    distanceM: d,
+  };
 }

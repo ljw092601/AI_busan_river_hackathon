@@ -23,6 +23,35 @@ export type { BadgeModalProps } from './BadgeModal';
 
 export { useModalBehavior, useBackdropClose } from './useModalBehavior';
 
+/* ── 위치 잠금해제 ─────────────────────────────────────────────
+   ⚠️ 클라이언트 판정입니다(types.ts lockStateOf 주석 참고). 우회할 수 있고,
+      그래서 어떤 문구도 "인증"이라고 말하지 않습니다.
+   HomeScreen이 useGeolocation()을 한 번만 부르고 RiverLocationProvider로 내려보냅니다.
+   주입되는 MissionModal은 useRiverLock(river)으로 그 값을 읽습니다 —
+   배선하는 쪽에서 따로 넘길 것은 없습니다. */
+export { LocationBanner } from './LocationBanner';
+export type { LocationBannerProps } from './LocationBanner';
+
+export {
+  RiverLocationProvider,
+  useRiverLocation,
+  useRiverLock,
+  accuracyPoorOf,
+} from './LocationContext';
+export type { RiverLocationValue, RiverLocationProviderProps } from './LocationContext';
+
+export {
+  POOR_ACCURACY_M,
+  approxDistance,
+  hasCoordinates,
+  isAccuracyPoor,
+  lockNote,
+  lockOf,
+  unlockedCount,
+  withLocks,
+} from './location';
+export type { RiverWithLock } from './location';
+
 export { themeOf } from './theme';
 export type { RiverTheme, ThemeKey } from './theme';
 
@@ -35,8 +64,9 @@ export {
   useClaimBadge,
 } from './queries';
 
-export { isRiverComplete, solvedCount } from './types';
+export { isRiverComplete, solvedCount, lockStateOf } from './types';
 export type {
+  LockState,
   RiverView,
   QuizView,
   MissionKind,

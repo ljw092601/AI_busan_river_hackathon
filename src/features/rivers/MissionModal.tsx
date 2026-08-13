@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '@/lib/session';
 import { celebrate } from './celebrate';
+import { hasCoordinates, lockNote } from './location';
+import { useRiverLocation, useRiverLock } from './LocationContext';
 import { MissionStep } from './missions';
 import { isCompleteWith } from './missions/logic';
 import { QuizSection } from './QuizSection';
@@ -8,7 +10,7 @@ import { useAnswerQuiz, useClaimBadge, useCompleteMission } from './queries';
 import { playSound } from './sound';
 import { SoundToggle } from './SoundToggle';
 import { themeOf } from './theme';
-import { isRiverComplete, type QuizView, type RiverView } from './types';
+import { isRiverComplete, type LockState, type QuizView, type RiverView } from './types';
 
 /**
  * 하천 하나의 STEP 1 체험 미션 + STEP 2 퀴즈를 담는 모달.
@@ -17,11 +19,27 @@ import { isRiverComplete, type QuizView, type RiverView } from './types';
  * 서버 응답을 기다렸다가 그리면 버튼을 눌러도 반응이 없는 구간이 생기고,
  * 미로그인 사용자는 아예 아무 반응도 못 받게 됩니다.
  * 대신 "저장되지 않는다"는 사실은 화면에 정직하게 적습니다(아래 안내 배너).
+ *
+ * ★ 위치 잠금은 **여기 한 곳에서만** 겁니다
+ *   미션 컴포넌트(missions/*)마다 잠금을 넣으면 새 미션을 추가할 때마다 빠뜨릴 수 있고,
+ *   빠뜨린 것을 알아챌 방법도 없습니다. 여기서 STEP 1/STEP 2 자리 자체를 바꿔 끼웁니다.
+ *
+ *   잠겨 있어도 모달은 열립니다 — 하천 대백과는 그대로 읽히고, 잠긴 자리는 숨기지 않고
+ *   "여기 뭔가 있는데 좀 더 가까이 가야 해요"라고 보여 줍니다. 숨기면 동기가 사라집니다.
+ *
+ * ⚠️ 클라이언트 판정이라 우회할 수 있습니다(types.ts lockStateOf 주석).
+ *    그래서 "인증", "확인됨" 같은 말은 쓰지 않습니다.
  */
 
 export interface MissionModalProps {
   river: RiverView;
   onClose: () => void;
+  /**
+   * 잠금 상태를 직접 지정합니다(미리보기/테스트용).
+   * 보통은 넘기지 않습니다 — HomeScreen이 깔아 둔 RiverLocationProvider에서 읽습니다.
+   * provider도 override도 없으면 잠그지 않습니다.
+   */
+  lock?: LockState | null;
 }
 
 /** 배지 수령이 거절된 이유를 아이들이 읽을 말로 바꿉니다. */
@@ -38,9 +56,13 @@ function badgeReasonMessage(reason: string | undefined): string {
   }
 }
 
-export function MissionModal({ river, onClose }: MissionModalProps): JSX.Element {
+export function MissionModal({ river, onClose, lock: lockOverride = null }: MissionModalProps): JSX.Element {
   const theme = themeOf(river.theme);
   const { isLoggedIn } = useSession();
+
+  const lock = useRiverLock(river, lockOverride);
+  const { position, requestLocation, status } = useRiverLocation();
+  const gated = lock.locked;
 
   const completeMission = useCompleteMission();
   const answerQuiz = useAnswerQuiz();
@@ -150,12 +172,14 @@ export function MissionModal({ river, onClose }: MissionModalProps): JSX.Element
   }
 
   function handleMissionComplete() {
-    if (missionDone) return;
+    // 잠긴 상태에서는 미션 컴포넌트를 아예 그리지 않지만, 판정을 한 곳에 모아 둡니다.
+    if (gated || missionDone) return;
     setLocalMissionDone(true);
     void record(() => completeMission.mutateAsync(river.id), true, solved);
   }
 
   function handleQuizAnswer(quiz: QuizView, selectedIdx: number, isCorrect: boolean) {
+    if (gated) return;
     const nextSolved = new Set(solved);
     if (isCorrect) {
       nextSolved.add(quiz.id);
@@ -260,6 +284,32 @@ export function MissionModal({ river, onClose }: MissionModalProps): JSX.Element
             ) : null}
           </div>
 
+          {/* 위치 잠금 안내 — 왜 잠겼고 무엇을 하면 열리는지 한 곳에서 말합니다. */}
+          {gated ? (
+            <div
+              role="status"
+              className="bg-slate-100 border border-slate-300 rounded-2xl p-3 space-y-2"
+            >
+              <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <span aria-hidden="true">🔒</span>
+                <span>{lockNote(lock, position?.accuracy ?? null, hasCoordinates(river))}</span>
+              </p>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                미션과 퀴즈는 <strong>{river.name}</strong> 가까이에 있을 때 열려요. 아래 하천
+                이야기는 지금도 읽을 수 있어요.
+              </p>
+              {status === 'idle' || status === 'denied' || status === 'unavailable' ? (
+                <button
+                  type="button"
+                  onClick={requestLocation}
+                  className="min-h-[44px] w-full px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all"
+                >
+                  {status === 'idle' ? '가까운 하천 찾기' : '위치 다시 시도'}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
           {!isLoggedIn ? (
             <p className="text-[11px] leading-relaxed bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3">
               🔒 지금은 <strong>둘러보기</strong> 중이에요. 로그인하면 진행 상황이 저장돼요 — 지금
@@ -278,18 +328,33 @@ export function MissionModal({ river, onClose }: MissionModalProps): JSX.Element
 
           {/* STEP 1 — mission_kind가 컴포넌트를 고릅니다 */}
           {showMission ? (
-            <MissionStep
-              river={river}
-              theme={theme}
-              done={missionDone}
-              onComplete={handleMissionComplete}
-            />
+            gated ? (
+              <LockedStep step="STEP 1" title={river.missionTitle || '체험 미션'} done={missionDone} />
+            ) : (
+              <MissionStep
+                river={river}
+                theme={theme}
+                done={missionDone}
+                onComplete={handleMissionComplete}
+              />
+            )
           ) : null}
 
           {/* STEP 2 */}
           {showQuizzes ? (
-            <QuizSection river={river} solved={solved} onAnswer={handleQuizAnswer} />
+            gated ? (
+              <LockedStep
+                step="STEP 2"
+                title={`${river.name} 생태·역사 퀴즈 (총 ${river.quizzes.length}문항)`}
+                done={solvedHere === river.quizzes.length}
+              />
+            ) : (
+              <QuizSection river={river} solved={solved} onAnswer={handleQuizAnswer} />
+            )
           ) : null}
+
+          {/* 잠겨 있어도 읽을거리는 남깁니다 — 현장까지 못 가는 아이도 배울 수 있어야 합니다. */}
+          {gated ? <RiverStory river={river} /> : null}
 
           {complete ? (
             <p
@@ -305,7 +370,9 @@ export function MissionModal({ river, onClose }: MissionModalProps): JSX.Element
         <footer className="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center gap-3">
           <p className="text-xs text-slate-500 font-medium flex items-center gap-2 min-w-0">
             <span aria-hidden="true">ℹ️</span>
-            <span className="truncate">미션과 퀴즈를 모두 풀어야 탐험 달성!</span>
+            <span className="truncate">
+              {gated ? '하천 가까이에 가면 열려요' : '미션과 퀴즈를 모두 풀어야 탐험 달성!'}
+            </span>
           </p>
           <button
             type="button"
@@ -317,5 +384,62 @@ export function MissionModal({ river, onClose }: MissionModalProps): JSX.Element
         </footer>
       </div>
     </div>
+  );
+}
+
+/**
+ * 잠긴 STEP 자리.
+ *
+ * 숨기지 않고 **자리를 남겨 둡니다** — "여기 뭔가 있는데 아직 못 연다"가
+ * "아무것도 없다"보다 훨씬 강한 동기가 됩니다.
+ */
+function LockedStep({ step, title, done }: { step: string; title: string; done: boolean }) {
+  return (
+    <section className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-5 text-center space-y-2">
+      <div className="flex items-center justify-center gap-2 flex-wrap">
+        <span className="px-2.5 py-1 bg-slate-300 text-slate-800 rounded-full font-black text-xs shrink-0">
+          {step}
+        </span>
+        <h4 className="font-bold text-sm text-slate-700 break-keep">{title}</h4>
+      </div>
+      <p className="text-3xl" aria-hidden="true">
+        🔒
+      </p>
+      <p className="text-xs font-bold text-slate-700 break-keep">하천 가까이에 가면 열려요</p>
+      {done ? (
+        <p className="text-[11px] text-emerald-800 bg-emerald-100 rounded-xl px-3 py-1.5 inline-block">
+          이미 끝낸 단계예요 — 기록은 그대로 남아 있어요.
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+/** 잠겨 있을 때 대신 읽는 하천 이야기(대백과와 같은 내용). */
+function RiverStory({ river }: { river: RiverView }) {
+  return (
+    <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+      <h4 className="font-bold text-base text-slate-800 flex items-center gap-2">
+        <span aria-hidden="true">📖</span> {river.name} 이야기
+      </h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-700">
+        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <h5 className="font-bold text-slate-800 mb-1 text-sm flex items-center gap-1.5">
+            <span aria-hidden="true">🏛️</span> 역사 이야기
+          </h5>
+          <p className="leading-relaxed break-keep">
+            {river.detailedHistory || '역사 이야기를 준비하고 있어요.'}
+          </p>
+        </div>
+        <div className="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-100">
+          <h5 className="font-bold text-emerald-900 mb-1 text-sm flex items-center gap-1.5">
+            <span aria-hidden="true">🌿</span> 생태 환경 &amp; 특징
+          </h5>
+          <p className="leading-relaxed text-emerald-950 break-keep">
+            {river.detailedEcology || '생태 이야기를 준비하고 있어요.'}
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }

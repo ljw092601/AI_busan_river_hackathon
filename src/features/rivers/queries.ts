@@ -35,7 +35,8 @@ async function fetchContent() {
       `id, slug, name, subtitle, summary, icon, theme, badge_code, seq,
        detailed_history, detailed_ecology,
        mission_kind, mission_title, mission_body, mission_config,
-       spots ( id, quizzes ( id, seq, question, options, answer_idx, explanation ) )`,
+       spots ( id, lat, lng, radius_m,
+               quizzes ( id, seq, question, options, answer_idx, explanation ) )`,
     )
     .eq('is_active', true)
     .order('seq');
@@ -82,6 +83,9 @@ export function useRivers() {
         explanation: q.explanation,
       }));
 
+    // 하천당 스팟은 1개입니다(0013). 없으면 좌표 미설정이므로 지도에 찍지 않습니다.
+    const spot = (r.spots ?? [])[0];
+
     return {
       id: r.id,
       slug: r.slug,
@@ -93,6 +97,9 @@ export function useRivers() {
       badgeCode: r.badge_code,
       detailedHistory: r.detailed_history,
       detailedEcology: r.detailed_ecology,
+      lat: spot?.lat ?? 0,
+      lng: spot?.lng ?? 0,
+      radiusM: spot?.radius_m ?? 1000,
       missionKind: r.mission_kind as MissionKind | null,
       missionTitle: r.mission_title,
       missionBody: r.mission_body,

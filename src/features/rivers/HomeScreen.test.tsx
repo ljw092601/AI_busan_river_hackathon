@@ -72,6 +72,10 @@ function makeRiver(i: number, over: Partial<RiverView> = {}): RiverView {
     badgeCode: `river_badge_${i}`,
     detailedHistory: `역사이야기${i}`,
     detailedEcology: `생태이야기${i}`,
+    // 부산 근방 좌표를 하천마다 조금씩 벌려 둡니다(거리 판정 테스트용).
+    lat: 35.15 + i * 0.02,
+    lng: 129.05 + i * 0.02,
+    radiusM: 1000,
     missionKind: 'acknowledge',
     missionTitle: `미션${i}`,
     missionBody: '본문',

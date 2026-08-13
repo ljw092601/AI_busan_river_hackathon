@@ -95,14 +95,31 @@ on conflict (slug) do update set
   mission_kind = excluded.mission_kind, mission_title = excluded.mission_title,
   mission_body = excluded.mission_body, mission_config = excluded.mission_config;
 
--- ── 하천당 스팟 1개 ─────────────────────────────────────────────────────
--- 좌표는 미실측(0,0) 자리표시자입니다. 지금 구조에서는 GPS 체크인을 쓰지 않으므로
--- 화면에 영향이 없지만, 위치 기능을 되살리려면 현장 답사가 선행되어야 합니다.
+-- ── 하천당 스팟 1개 (지오펜스 중심) ─────────────────────────────────────
+--
+-- ⚠️⚠️ 미검증 근사 좌표입니다. 각 하천의 잘 알려진 접근 지점을 기준으로 했지만
+--   현장 답사로 확인하지 않았습니다. 운영 배포 전 실측으로 교체하세요.
+--
+-- ⚠️ (0,0)을 자리표시자로 쓰지 마세요 — 0016의 spots_geom_not_null_island 제약이
+--   막습니다. 그 값이 유효한 좌표처럼 거리 계산에 섞여 들어가
+--   "약 9,700km 더 가야 해요"가 화면에 뜨는 문제가 있었습니다.
+--   좌표를 모르면 스팟을 만들지 마세요. 없는 것과 0은 다릅니다.
+--
+-- 반경이 1000~1500m인 이유: 하천은 길이 수 km의 **선**인데 점 하나로 근사하고
+-- 있기 때문입니다. 좁게 잡으면 하천 산책로 한가운데서도 잠금이 안 풀립니다.
 insert into public.spots (river_id, seq, name, theme, geom, radius_m, arrival_story)
 select r.id, 1, r.name, r.subtitle,
-       ST_SetSRID(ST_MakePoint(0, 0), 4326)::geography, 100, r.summary
+       ST_SetSRID(ST_MakePoint(v.lng, v.lat), 4326)::geography, v.radius_m, r.summary
 from public.rivers r
-on conflict (river_id, seq) do nothing;
+join (values
+  ('suyeong',      129.1256, 35.1729, 1500),  -- 수영교 일대 (수영구·해운대구)
+  ('bujeon',       129.0594, 35.1583, 1000),  -- 부전동 서면 일대 (부산진구)
+  ('oncheoncheon', 129.0784, 35.2049, 1500),  -- 온천천 시민공원 (동래구)
+  ('dongcheon',    129.0561, 35.1417, 1000),  -- 범천동 일대 (부산진구)
+  ('daecheon',     129.0128, 35.2344, 1200)   -- 화명동 일대 (북구)
+) as v(slug, lng, lat, radius_m) on v.slug = r.slug
+on conflict (river_id, seq) do update
+  set geom = excluded.geom, radius_m = excluded.radius_m;
 
 -- ── 퀴즈 4문항 (동천은 미션만이라 퀴즈 없음) ────────────────────────────
 delete from public.quizzes;
