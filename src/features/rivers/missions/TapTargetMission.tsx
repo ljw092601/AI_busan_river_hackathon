@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { playSound } from '../sound';
 import { MissionDoneNote, MissionPanel, type MissionProps } from './MissionPanel';
 import {
   MissionPhotoFailure,
+  MissionPhotoNeedsLogin,
   MissionPhotoPending,
-  MissionPhotoSignedOutNote,
   MissionPhotoThumb,
   OTTER_PHOTO_TAG,
   useMissionPhoto,
@@ -30,15 +31,17 @@ export function TapTargetMission({ river, theme, done, onComplete }: MissionProp
 
   // spotId: RiverView 가 스팟 id 를 들고 오지 않아 null 입니다(types.ts 는 이 트랙 범위 밖).
   const photo = useMissionPhoto({ missionTag: OTTER_PHOTO_TAG });
+  const [needsLogin, setNeedsLogin] = useState(false);
 
   function handleTap() {
     if (done || photo.pending) return;
 
     if (!photo.canCapture) {
-      // 미로그인: 카메라를 열어 봐야 not_signed_in 으로 끝납니다. 지금까지처럼
-      // 사진 없이 완료시키고, 왜 사진이 안 남는지는 아래 안내가 말해 줍니다.
-      playSound('camera');
-      onComplete();
+      // 미로그인: 카메라를 열어 봐야 not_signed_in 으로 끝납니다.
+      // ⚠️ 예전에는 여기서 곧바로 onComplete() 했습니다. 그러면 "찰칵"이라고 해놓고
+      //   아무 일도 없이 완료 화면으로 넘어가, 카메라 기능이 아예 없는 것처럼 보입니다.
+      //   대신 이유를 말하고 계속할지 사용자가 고르게 합니다.
+      setNeedsLogin(true);
       return;
     }
 
@@ -49,6 +52,8 @@ export function TapTargetMission({ river, theme, done, onComplete }: MissionProp
 
   function completeWithoutPhoto() {
     photo.reset();
+    setNeedsLogin(false);
+    playSound('camera');
     onComplete();
   }
 
@@ -88,7 +93,7 @@ export function TapTargetMission({ river, theme, done, onComplete }: MissionProp
         />
       ) : null}
 
-      {!done && !photo.canCapture ? <MissionPhotoSignedOutNote /> : null}
+      {!done && needsLogin ? <MissionPhotoNeedsLogin onSkip={completeWithoutPhoto} /> : null}
 
       {photo.photo ? <MissionPhotoThumb photo={photo.photo} /> : null}
 

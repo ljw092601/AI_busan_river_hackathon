@@ -235,7 +235,37 @@ export function MissionPhotoSignedOutNote() {
   return (
     <p className="rounded-xl bg-slate-100 border border-slate-200 px-3 py-2 text-[11px] leading-relaxed text-slate-600 break-keep">
       <span aria-hidden="true">🔒 </span>
-      사진 저장은 로그인한 뒤에 할 수 있어요. 지금은 사진 없이 미션만 완료돼요.
+      사진 저장은 로그인한 뒤에 할 수 있어요.
     </p>
+  );
+}
+
+/**
+ * 미로그인 상태에서 촬영 버튼을 눌렀을 때.
+ *
+ * ★ 예전에는 그냥 즉시 완료시켰습니다. 그러면 "사진을 찍는다"고 해놓고 아무 일도
+ *   일어나지 않은 채 완료 화면으로 넘어가, 카메라 기능이 없는 것처럼 보였습니다.
+ *   (실제로 그렇게 보인다는 지적을 받았습니다.)
+ *   이제는 왜 사진이 안 찍히는지 말하고, 계속할지 사용자가 고릅니다.
+ */
+export function MissionPhotoNeedsLogin({ onSkip }: { onSkip: () => void }) {
+  return (
+    <div
+      role="status"
+      className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-3 space-y-2"
+    >
+      <p className="text-[11px] leading-relaxed text-amber-900 break-keep">
+        <span aria-hidden="true">📸 </span>
+        사진을 저장하려면 로그인이 필요해요. 위쪽 <strong>로그인하고 저장하기</strong>를 누르면
+        찍은 사진이 기록에 남아요.
+      </p>
+      <button
+        type="button"
+        onClick={onSkip}
+        className="min-h-[44px] w-full rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-bold text-amber-900 transition-all hover:bg-amber-100"
+      >
+        사진 없이 미션만 완료하기
+      </button>
+    </div>
   );
 }

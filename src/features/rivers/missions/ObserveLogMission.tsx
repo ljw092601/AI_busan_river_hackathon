@@ -4,7 +4,7 @@ import { MissionDoneNote, MissionPanel, type MissionProps } from './MissionPanel
 import {
   MissionPhotoFailure,
   MissionPhotoPending,
-  MissionPhotoSignedOutNote,
+  MissionPhotoNeedsLogin,
   MissionPhotoThumb,
   OBSERVE_LOG_PHOTO_TAG,
   useMissionPhoto,
@@ -37,6 +37,7 @@ export function ObserveLogMission({ river, theme, done, onComplete }: MissionPro
 
   // spotId: RiverView 가 스팟 id 를 들고 오지 않아 null 입니다(types.ts 는 이 트랙 범위 밖).
   const photo = useMissionPhoto({ missionTag: OBSERVE_LOG_PHOTO_TAG });
+  const [needsLogin, setNeedsLogin] = useState(false);
 
   const remaining = fields.filter((f) => answers[f.key] === undefined).length;
   const canSubmit = remaining === 0;
@@ -46,9 +47,9 @@ export function ObserveLogMission({ river, theme, done, onComplete }: MissionPro
     if (locked) return;
 
     if (!photo.canCapture) {
-      // 미로그인: 카메라를 열어 봐야 not_signed_in 으로 끝납니다. 일지는 남깁니다.
-      playSound('camera');
-      onComplete();
+      // 미로그인: 카메라를 열어 봐야 not_signed_in 으로 끝납니다.
+      // ⚠️ 곧바로 완료시키면 "사진 촬영"이라고 해놓고 아무 일도 안 일어난 것처럼 보입니다.
+      setNeedsLogin(true);
       return;
     }
 
@@ -59,6 +60,8 @@ export function ObserveLogMission({ river, theme, done, onComplete }: MissionPro
 
   function completeWithoutPhoto() {
     photo.reset();
+    setNeedsLogin(false);
+    playSound('camera');
     onComplete();
   }
 
@@ -102,7 +105,7 @@ export function ObserveLogMission({ river, theme, done, onComplete }: MissionPro
           <MissionDoneNote>{doneLabel}</MissionDoneNote>
         ) : (
           <>
-            {!photo.canCapture ? <MissionPhotoSignedOutNote /> : null}
+            {needsLogin ? <MissionPhotoNeedsLogin onSkip={completeWithoutPhoto} /> : null}
 
             <button
               type="button"

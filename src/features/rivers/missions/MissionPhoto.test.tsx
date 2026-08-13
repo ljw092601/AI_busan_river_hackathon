@@ -277,15 +277,22 @@ describe('TapTargetMission — 탭이 곧 촬영', () => {
     expect(container.textContent).toContain('사진을 준비하고 있어요');
   });
 
-  it('미로그인이면 카메라를 열지 않고, 미리 알려 준 뒤 사진 없이 완료시킨다', async () => {
+  it('미로그인이면 카메라를 열지 않고, 이유를 말한 뒤 사용자가 고르게 한다', async () => {
     state.userId = null;
     const completed: (string | null | undefined)[] = [];
     await renderOtter({ onComplete: (id) => completed.push(id) });
 
-    expect(container.textContent).toContain('사진 저장은 로그인한 뒤에 할 수 있어요');
-
     await click(byText('눌러서 찰칵!')!);
-    expect(state.calls).toEqual([]); // 열어 놓고 실패시키지 않습니다
+
+    // 열어 놓고 실패시키지 않습니다.
+    expect(state.calls).toEqual([]);
+    // ★ 곧바로 완료시키지 않습니다. 그러면 "찰칵"이라고 해놓고 아무 일도 없이
+    //   완료 화면으로 넘어가 카메라 기능이 아예 없는 것처럼 보입니다.
+    expect(completed).toEqual([]);
+    expect(container.textContent).toContain('사진을 저장하려면 로그인이 필요해요');
+
+    // 사용자가 명시적으로 건너뛰면 그때 완료됩니다.
+    await click(byText('사진 없이 미션만 완료하기')!);
     expect(completed).toEqual([undefined]);
   });
 
@@ -437,17 +444,19 @@ describe('ObserveLogMission — CTA가 실제로 카메라를 연다', () => {
     expect(completed).toEqual([undefined]);
   });
 
-  it('미로그인이면 카메라를 열지 않고 사진 없이 일지만 등록한다', async () => {
+  it('미로그인이면 카메라를 열지 않고, 이유를 말한 뒤 사용자가 고르게 한다', async () => {
     state.userId = null;
     const completed: (string | null | undefined)[] = [];
     await renderLog({ onComplete: (id) => completed.push(id) });
-
-    expect(container.textContent).toContain('사진 저장은 로그인한 뒤에 할 수 있어요');
 
     await answerAll(['식물', '맑음', '괜찮음']);
     await click(byText('📷 현장 사진 촬영 & 일지 등록')!);
 
     expect(state.calls).toEqual([]);
+    expect(completed).toEqual([]);
+    expect(container.textContent).toContain('사진을 저장하려면 로그인이 필요해요');
+
+    await click(byText('사진 없이 미션만 완료하기')!);
     expect(completed).toEqual([undefined]);
   });
 
