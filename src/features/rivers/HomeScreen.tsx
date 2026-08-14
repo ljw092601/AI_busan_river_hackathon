@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Suspense, lazy, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { AuthPromptProvider, HeaderAccount, useAuthPrompt } from '@/features/auth/home';
 import { useGeolocation, type GeoPosition } from '@/lib/geo';
 import { useSession } from '@/lib/session';
@@ -11,6 +11,20 @@ import { ProgressHero } from './ProgressHero';
 import { RiverCard } from './RiverCard';
 import { useRivers } from './queries';
 import { isRiverComplete, type RiverView } from './types';
+
+/**
+ * 생물 도감 탭.
+ *
+ * ★ lazy import 인 이유
+ *   `@/features/dex` 배럴은 `@/lib/supabase` 를 정적으로 끌고 들어오는데,
+ *   그 모듈은 VITE_SUPABASE_* 가 없으면 **로드 시점에** 예외를 던집니다.
+ *   정적 import 로 두면 이 파일의 테스트가 supabase 를 목킹해야만 돌아갑니다.
+ *   동적 import 는 실제로 이 탭을 열 때만 평가되므로 그 결합이 생기지 않습니다.
+ *   (인증 트랙이 AuthModal 에 쓴 것과 같은 방식입니다.)
+ */
+const DexContainer = lazy(() =>
+  import('@/features/dex').then((m) => ({ default: m.DexContainer })),
+);
 
 /**
  * 부산 하천 탐험대 홈. example_html.html의 레이아웃을 그대로 옮겼습니다.
@@ -54,11 +68,12 @@ export interface HomeScreenProps {
   }) => ReactNode;
 }
 
-type TabKey = 'missions' | 'guide';
+type TabKey = 'missions' | 'guide' | 'dex';
 
 const TABS: { key: TabKey; label: string; emoji: string }[] = [
   { key: 'missions', label: '탐험 미션 & 퀴즈', emoji: '🧭' },
   { key: 'guide', label: '하천 대백과', emoji: '📖' },
+  { key: 'dex', label: '생물 도감', emoji: '🔎' },
 ];
 
 const TAB_BASE =
@@ -255,6 +270,18 @@ export function HomeScreen({ renderMissionModal, renderMap }: HomeScreenProps) {
                 ))}
               </div>
             )}
+          </section>
+        ) : tab === 'dex' ? (
+          <section>
+            {/* 탭으로 두면 주소가 바뀌지 않으므로 ?demo=1 이 그대로 유지됩니다.
+                (/dex 라우트도 그대로 살아 있습니다 — 직접 링크로도 들어올 수 있게.) */}
+            <Suspense
+              fallback={
+                <p className="py-16 text-center text-sm text-slate-500">도감을 여는 중…</p>
+              }
+            >
+              <DexContainer />
+            </Suspense>
           </section>
         ) : (
           <section>

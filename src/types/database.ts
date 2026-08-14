@@ -1001,6 +1001,10 @@ export type Database = {
       can_unlock_expert: { Args: { p_user_id: string }; Returns: boolean }
       current_user_is_expert: { Args: Record<string, never>; Returns: boolean }
       claim_river_badge: { Args: { p_river_id: string }; Returns: Json }
+      claim_species_photo: {
+        Args: { p_species_id: string; p_photo_id: string }
+        Returns: Json
+      }
       river_progress: {
         Args: Record<string, never>
         Returns: {

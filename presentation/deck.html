@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>부산 하천 탐험대 — 발표 덱</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   자체 완결형 슬라이드.
+   외부 폰트·스크립트·CDN 을 전혀 쓰지 않습니다. 이미지는 assets/ 상대 경로,
+   다이어그램은 전부 인라인 SVG 입니다 → file:// 로 열어도 그대로 뜹니다.
+
+   1280×720(16:9) 무대를 화면 크기에 맞춰 통째로 확대/축소합니다.
+   → 프로젝터가 1920 폭이면 모든 글자가 1.5배로 커집니다.
+
+   ⚠️ 이 덱은 "읽는 문서"가 아니라 "말하는 사람의 뒷받침"입니다.
+      슬라이드당 문장 3개 이하. 설명은 발표자가 말로 채웁니다.
+   ══════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #0a1420;
+  overflow: hidden;
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕",
+               "Noto Sans KR", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* SVG 안의 글자도 본문과 같은 서체를 씁니다. */
+svg { font-family: inherit; }
+
+#viewport { position: fixed; inset: 0; }
+
+#stage {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: 50% 50%;
+  transform: translate(-50%, -50%);
+}
+
+.slide {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 40px 62px 58px;
+  background:
+    radial-gradient(1100px 620px at 88% -12%, rgba(45,212,191,.13), transparent 62%),
+    radial-gradient(900px 560px at -8% 108%, rgba(56,132,255,.16), transparent 60%),
+    linear-gradient(160deg, #0d1b2b 0%, #0a1420 58%, #0b1a26 100%);
+  color: #e9f2f8;
+  font-size: 24px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+/* ── 공통 타이포 ─────────────────────────────────────────────── */
+.eyebrow {
+  font-size: 20px; font-weight: 700; letter-spacing: .13em; line-height: 1.3;
+  color: #4fd3c4; text-transform: uppercase; margin-bottom: 7px;
+}
+h1 { font-size: 62px; font-weight: 800; line-height: 1.16; letter-spacing: -.02em; }
+h2 { font-size: 42px; font-weight: 800; line-height: 1.18; letter-spacing: -.02em; }
+h2 .thin { font-weight: 400; color: #a9c2d4; }
+.rule { width: 88px; height: 5px; border-radius: 3px; background: #2dd4bf; margin: 13px 0 18px; }
+/* 내용이 적은 슬라이드는 위로 몰리지 않고 세로 가운데에 놓입니다.
+   .shotrow / .diawrap 처럼 flex:1 인 자식이 있으면 이 설정은 영향이 없습니다. */
+.body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+
+.muted { color: #96b0c4; }
+.accent { color: #5eead4; font-weight: 700; }
+.warn   { color: #fbbf5c; font-weight: 700; }
+.dim    { color: #7f9bb0; }
+strong  { color: #ffffff; font-weight: 700; }
+code, .mono {
+  font-family: "Cascadia Mono", Consolas, "D2Coding", "Courier New", monospace;
+  font-size: .92em; color: #8ee6d8;
+  background: rgba(45,212,191,.11); border-radius: 5px; padding: 1px 6px;
+}
+
+ul { list-style: none; }
+ul.checks > li {
+  position: relative; padding-left: 36px; margin-bottom: 15px; font-size: 25px;
+}
+ul.checks > li:last-child { margin-bottom: 0; }
+ul.checks > li::before {
+  content: ""; position: absolute; left: 6px; top: .52em;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #2dd4bf; box-shadow: 0 0 0 5px rgba(45,212,191,.16);
+}
+
+/* 짧은 구절용 큰 목록 — 설명 문장 없이 구절만 얹습니다. */
+ul.big > li { font-size: 32px; margin-bottom: 26px; padding-left: 40px; line-height: 1.35; }
+ul.big > li::before { top: .48em; width: 13px; height: 13px; box-shadow: 0 0 0 6px rgba(45,212,191,.16); }
+ul.big > li.amber::before { background: #fbbf5c; box-shadow: 0 0 0 6px rgba(251,191,92,.16); }
+ul.big > li.rose::before  { background: #f4849b; box-shadow: 0 0 0 6px rgba(244,132,155,.16); }
+
+/* ── 표지 ────────────────────────────────────────────────────── */
+.cover { justify-content: center; padding-left: 86px; }
+.cover .kicker {
+  display: inline-block; align-self: flex-start;
+  font-size: 21px; font-weight: 700; letter-spacing: .18em;
+  color: #0a1420; background: #2dd4bf; padding: 7px 18px; border-radius: 999px; margin-bottom: 28px;
+}
+.cover h1 { font-size: 80px; }
+.cover .sub { font-size: 32px; color: #cfe2ee; margin-top: 24px; line-height: 1.42; }
+.cover .stack { margin-top: 30px; font-size: 22px; color: #86a3b8; line-height: 1.55; }
+.blank {
+  margin-top: 26px; font-size: 20px; color: #6f8ca2;
+  border-left: 4px solid #33566d; padding-left: 15px; line-height: 1.4;
+}
+
+/* ── 선거 포스터 슬라이드 ────────────────────────────────────── */
+.poster-slide {
+  flex-direction: row; align-items: center; gap: 56px;
+  padding: 36px 62px 46px;
+}
+.poster-fig { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 11px; }
+.poster-fig img {
+  display: block; height: 552px; width: auto;
+  border-radius: 10px; border: 1px solid rgba(126,180,210,.28);
+  box-shadow: 0 20px 48px rgba(0,0,0,.55);
+}
+.poster-fig figcaption {
+  font-size: 17px; color: #8fa9bd; line-height: 1.4; text-align: center;
+  max-width: 400px; word-break: keep-all;
+}
+.poster-fig figcaption b { color: #bcd3e2; font-weight: 700; }
+.poster-text { flex: 1; min-width: 0; }
+.poster-text h1 { font-size: 58px; }
+.poster-text .rule { margin: 20px 0 30px; }
+.poster-text .line {
+  font-size: 31px; line-height: 1.4; color: #dbeaf4;
+  border-left: 5px solid #2dd4bf; padding-left: 20px; margin-bottom: 20px;
+}
+.poster-text .line:last-child { margin-bottom: 0; color: #5eead4; font-weight: 800; }
+
+/* ── 카드 ────────────────────────────────────────────────────── */
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.card {
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(126,180,210,.2);
+  border-left: 5px solid #2dd4bf;
+  border-radius: 11px;
+  padding: 15px 20px;
+}
+.card.amber { border-left-color: #fbbf5c; }
+.card.rose  { border-left-color: #f4849b; }
+.card.blue  { border-left-color: #6aa8ff; }
+.card h3 { font-size: 24px; font-weight: 800; margin-bottom: 6px; color: #ffffff; line-height: 1.25; }
+.card p  { font-size: 21px; color: #b6cddc; line-height: 1.4; }
+.card p + p { margin-top: 5px; }
+.card.tight h3 { font-size: 22px; }
+.card.tight p  { font-size: 19px; }
+
+/* ── 표 ──────────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: 27px; }
+th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid rgba(126,180,210,.18); }
+th {
+  font-size: 21px; letter-spacing: .06em; color: #6fd8c9;
+  text-transform: uppercase; border-bottom: 2px solid rgba(45,212,191,.45);
+}
+td.name { font-weight: 700; color: #fff; white-space: nowrap; }
+.tag {
+  display: inline-block; font-size: 21px; padding: 3px 12px; border-radius: 999px;
+  background: rgba(107,168,255,.16); color: #9cc6ff; font-weight: 700;
+  font-family: "Cascadia Mono", Consolas, monospace;
+}
+.tag.none { background: rgba(148,163,184,.14); color: #93a9ba; font-family: inherit; }
+
+/* ── 스크린샷 ────────────────────────────────────────────────── */
+.shotrow { flex: 1; min-height: 0; display: flex; gap: 44px; align-items: center; }
+.shotrow.tri { gap: 34px; }
+.shot {
+  display: block; width: auto; flex: 0 0 auto;
+  border-radius: 15px; border: 1px solid rgba(126,180,210,.3);
+  box-shadow: 0 16px 38px rgba(0,0,0,.5);
+}
+.shotcap { flex: 1; min-width: 0; }
+.shotcap .lead { font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.3; }
+.shotcap .lead + .sublist { margin-top: 22px; }
+.sublist li {
+  position: relative; padding-left: 32px; font-size: 25px; color: #c3d8e6;
+  line-height: 1.38; margin-bottom: 16px;
+}
+.sublist li:last-child { margin-bottom: 0; }
+.sublist li::before {
+  content: ""; position: absolute; left: 4px; top: .55em;
+  width: 10px; height: 10px; border-radius: 50%; background: #2dd4bf;
+}
+.sublist li.amber::before { background: #fbbf5c; }
+.shotlabel { text-align: center; font-size: 21px; color: #8fa9bd; margin-top: 12px; }
+.shotpair { display: flex; flex-direction: column; align-items: center; }
+.cardcompare { flex: 1; min-height: 0; display: flex; gap: 56px; align-items: center; justify-content: center; }
+
+/* 한글은 어절 단위로 줄바꿈합니다 — "않습니 / 다" 같은 끊김 방지 */
+.sublist li, .shotcap .lead, .shotlabel, .card p, .card h3, .note { word-break: keep-all; }
+
+/* ── 인라인 SVG 다이어그램 ───────────────────────────────────── */
+.dia { display: block; width: 100%; height: auto; }
+.diawrap { flex: 1; min-height: 0; display: flex; align-items: center; }
+
+.note {
+  margin-top: 14px; font-size: 21px; color: #9db6c8; line-height: 1.4;
+  border-left: 4px solid #3d6379; padding-left: 15px;
+}
+.note.warn-note { border-left-color: #fbbf5c; color: #dcc39a; }
+
+/* ── 숫자 강조 ───────────────────────────────────────────────── */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.stat {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(126,180,210,.2);
+  border-radius: 12px; padding: 20px 12px; text-align: center;
+}
+.stat .n { font-size: 60px; font-weight: 800; color: #5eead4; line-height: 1.06; }
+.stat .l { font-size: 21px; color: #a9c2d4; margin-top: 7px; line-height: 1.3; }
+.statline {
+  margin-top: 18px; text-align: center; font-size: 24px; color: #a9c2d4; line-height: 1.5;
+}
+.statline b { color: #ffffff; }
+
+/* ── 마무리 ──────────────────────────────────────────────────── */
+.closing { justify-content: center; padding-left: 86px; }
+.closing .quotes li {
+  font-size: 31px; line-height: 1.4; margin-bottom: 22px;
+  padding-left: 26px; border-left: 4px solid #2dd4bf; color: #dbeaf4;
+}
+.closing .quotes li span { display: block; font-size: 22px; color: #93b0c4; margin-top: 6px; }
+
+/* ── 쪽수 / 진행 바 ──────────────────────────────────────────── */
+#counter {
+  position: absolute; right: 28px; bottom: 18px;
+  font-size: 20px; letter-spacing: .06em; color: #7f9bb0;
+  font-variant-numeric: tabular-nums; z-index: 10;
+}
+#counter b { color: #2dd4bf; font-weight: 800; font-size: 25px; }
+#progress {
+  position: absolute; left: 0; bottom: 0; height: 4px;
+  background: linear-gradient(90deg, #2dd4bf, #6aa8ff);
+  transition: width .22s ease; z-index: 10;
+}
+#hint {
+  position: absolute; left: 28px; bottom: 20px;
+  font-size: 18px; color: #4d6d84; z-index: 10;
+  transition: opacity .6s ease;
+}
+</style>
+</head>
+<body>
+
+<div id="viewport">
+<div id="stage">
+
+<!-- ══════════ 1. 이태엽의 선거 포스터 ══════════ -->
+<section class="slide poster-slide">
+  <figure class="poster-fig">
+    <img src="assets/poster.jpg" alt="이태엽 후보 선거 포스터 — 맑게 흐르는 부산의 미래">
+    <figcaption>포스터 공약 원문 · <b>“물고기가 살고 아이들이 뛰노는 생태 하천 회복”</b></figcaption>
+  </figure>
+  <div class="poster-text">
+    <h1>이태엽의<br>선거 포스터</h1>
+    <div class="rule"></div>
+    <p class="line">아이들이 뛰어노는 생태 하천 만들겠다는 공약</p>
+    <p class="line">그 점에 착안</p>
+  </div>
+</section>
+
+<!-- ══════════ 2. 표지 ══════════ -->
+<section class="slide cover">
+  <div class="kicker">부산 하천 탐험대</div>
+  <h1>걸어야 열리는<br>하천 학습 앱</h1>
+  <p class="sub">부산 5대 하천을 가족이 함께 걷는 모바일 웹앱</p>
+  <p class="stack">
+    React 18 + TypeScript + Vite · Supabase · 카카오 지도 · Vercel<br>
+    설치·회원가입 없이 링크 하나로 시작
+  </p>
+  <p class="blank">발표자 · 팀명 · 데모 URL — 발표 전에 채워 주세요</p>
+</section>
+
+<!-- ══════════ 3. 문제 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Problem</div>
+  <h2>하천 교육이 <span class="thin">아이에게 남지 않는 이유</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <ul class="checks big">
+      <li>교과서의 하천과 집 앞 산책로가 <strong>따로 논다</strong></li>
+      <li>현장학습 프린트물은 <strong>“다녀왔다”는 기록만</strong></li>
+      <li class="amber">앱으로 풀려 해도 <strong>설치·가입 장벽에서 이탈</strong></li>
+      <li class="rose">희귀종 도감을 얹으면 <strong>빈손 나들이</strong>가 된다</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════ 4. 해결 — 미션 흐름 다이어그램 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Solution</div>
+  <h2>걸어야 열립니다 <span class="thin">— 이동 자체가 게임</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="diawrap">
+      <svg class="dia" viewBox="0 0 1100 250" role="img"
+           aria-label="미션 흐름: 걷기 → 잠금해제 → 미션 → 퀴즈 → 배지">
+        <defs>
+          <marker id="mfArrow" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#4c7189"/>
+          </marker>
+        </defs>
+
+        <!-- 1. 걷기 -->
+        <rect x="0" y="16" width="190" height="185" rx="17"
+              fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <g transform="translate(95,80) scale(1.5)">
+          <path d="M0 11 C -7 3 -8.5 -1 -8.5 -3.5 A 8.5 8.5 0 1 1 8.5 -3.5 C 8.5 -1 7 3 0 11 Z"
+                fill="none" stroke="#5eead4" stroke-width="1.9" stroke-linejoin="round"/>
+          <circle cx="0" cy="-3.5" r="3.2" fill="#5eead4"/>
+        </g>
+        <text x="95" y="152" text-anchor="middle" font-size="29" font-weight="800" fill="#ffffff">걷기</text>
+        <text x="95" y="182" text-anchor="middle" font-size="18" fill="#9db6c8">남은 거리 표시</text>
+
+        <!-- 2. 잠금해제 -->
+        <rect x="227" y="16" width="190" height="185" rx="17"
+              fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <g transform="translate(322,80) scale(1.5)">
+          <rect x="-9" y="-1" width="18" height="13" rx="2.5" fill="none" stroke="#9cc6ff" stroke-width="1.9"/>
+          <path d="M -4 -1 V -7 A 6 6 0 0 1 8 -7" fill="none" stroke="#9cc6ff" stroke-width="1.9" stroke-linecap="round"/>
+          <circle cx="0" cy="5.5" r="1.9" fill="#9cc6ff"/>
+        </g>
+        <text x="322" y="152" text-anchor="middle" font-size="29" font-weight="800" fill="#ffffff">잠금해제</text>
+        <text x="322" y="182" text-anchor="middle" font-size="18" fill="#9db6c8">하천 반경 안</text>
+
+        <!-- 3. 미션 -->
+        <rect x="454" y="16" width="190" height="185" rx="17"
+              fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <g transform="translate(549,80) scale(1.5)">
+          <rect x="-8.5" y="-10" width="17" height="21" rx="2.5" fill="none" stroke="#5eead4" stroke-width="1.9"/>
+          <rect x="-4" y="-13.5" width="8" height="5" rx="1.5" fill="#5eead4"/>
+          <path d="M -4.5 1 L -1 4.5 L 5 -2.5" fill="none" stroke="#5eead4" stroke-width="1.9"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <text x="549" y="152" text-anchor="middle" font-size="29" font-weight="800" fill="#ffffff">미션</text>
+        <text x="549" y="182" text-anchor="middle" font-size="18" fill="#9db6c8">5종 중 하천마다 하나</text>
+
+        <!-- 4. 퀴즈 -->
+        <rect x="681" y="16" width="190" height="185" rx="17"
+              fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <g transform="translate(776,80) scale(1.5)">
+          <circle cx="0" cy="0" r="10.5" fill="none" stroke="#9cc6ff" stroke-width="1.9"/>
+          <text x="0" y="6" text-anchor="middle" font-size="16" font-weight="800" fill="#9cc6ff">?</text>
+        </g>
+        <text x="776" y="152" text-anchor="middle" font-size="29" font-weight="800" fill="#ffffff">퀴즈</text>
+        <text x="776" y="182" text-anchor="middle" font-size="18" fill="#9db6c8">맞아도 틀려도 해설</text>
+
+        <!-- 5. 배지 -->
+        <rect x="908" y="16" width="190" height="185" rx="17"
+              fill="rgba(251,191,92,.09)" stroke="#7a6033" stroke-width="1.5"/>
+        <g transform="translate(1003,80) scale(1.5)">
+          <polygon points="0,-11 2.82,-3.88 10.46,-3.40 4.57,1.48 6.47,8.90 0,4.80 -6.47,8.90 -4.57,1.48 -10.46,-3.40 -2.82,-3.88"
+                   fill="#fbbf5c"/>
+        </g>
+        <text x="1003" y="152" text-anchor="middle" font-size="29" font-weight="800" fill="#ffffff">배지</text>
+        <text x="1003" y="182" text-anchor="middle" font-size="18" fill="#fbbf5c">서버가 다시 셈</text>
+
+        <!-- 화살표 -->
+        <g stroke="#4c7189" stroke-width="2.6" fill="none" marker-end="url(#mfArrow)">
+          <line x1="194" y1="108" x2="221" y2="108"/>
+          <line x1="421" y1="108" x2="448" y2="108"/>
+          <line x1="648" y1="108" x2="675" y2="108"/>
+          <line x1="875" y1="108" x2="902" y2="108"/>
+        </g>
+      </svg>
+    </div>
+    <p class="note">잠긴 하천도 <strong>역사·생태 이야기는 열려 있습니다.</strong> 잠기는 것은 미션과 퀴즈뿐입니다.</p>
+  </div>
+</section>
+
+<!-- ══════════ 5. 홈 화면 스크린샷 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Screen 1</div>
+  <h2>홈 <span class="thin">— 지도 + 하천 카드</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="shotrow">
+      <img class="shot" src="assets/app-home.jpg" alt="홈 화면 — 카카오 지도와 하천 카드 그리드" style="height:470px">
+      <div class="shotcap">
+        <p class="lead">링크 하나로 바로 시작합니다.</p>
+        <ul class="sublist">
+          <li>설치·가입 없이 하천 5곳을 먼저 둘러봅니다</li>
+          <li>위치는 <strong>자동으로 요청하지 않습니다</strong></li>
+          <li class="amber">잠긴 카드도 눌러서 읽을 수 있습니다</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 6. 잠금 → 해금 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Screen 2</div>
+  <h2>반경 밖 <span class="thin">→</span> 반경 안</h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="cardcompare">
+      <div class="shotpair">
+        <img class="shot" src="assets/card-locked.jpg" alt="반경 밖 — 잠긴 하천 카드" style="width:530px">
+        <div class="shotlabel">반경 밖 — <span class="dim">잠긴 것은 미션·퀴즈뿐</span></div>
+      </div>
+      <div class="shotpair">
+        <img class="shot" src="assets/card-unlocked.jpg" alt="반경 안 — 해금된 하천 카드" style="width:530px">
+        <div class="shotlabel">반경 안 — <span class="accent">지금 도전할 수 있어요</span></div>
+      </div>
+    </div>
+    <p class="note">밖이면 <span class="mono">약 1.9km 더 가야 해요</span>.
+      <strong>오차 300m 를 넘으면 거리를 말하지 않습니다.</strong></p>
+  </div>
+</section>
+
+<!-- ══════════ 7. 미션 모달 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Screen 3</div>
+  <h2>미션 <span class="thin">— 동천 플로깅</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="shotrow">
+      <img class="shot" src="assets/mission-collect.jpg" alt="동천 플로깅 미션 — 쓰레기 3개 중 2개를 주운 상태" style="width:520px">
+      <div class="shotcap">
+        <p class="lead">하천의 역사와 미션이 붙어 있습니다.</p>
+        <ul class="sublist">
+          <li>동천 = 오염의 역사 → <strong>쓰레기 3개 줍기</strong></li>
+          <li>온천천 = 돌아온 수달 → 수달 촬영</li>
+          <li class="amber">미로그인이면 <strong>저장되지 않는다고 먼저 말합니다</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 8. 퀴즈 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Screen 4</div>
+  <h2>퀴즈 <span class="thin">— 정답 직후</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="shotrow">
+      <img class="shot" src="assets/quiz-answer.jpg" alt="수영강 퀴즈 정답 직후 — 초록 해설이 열린 상태" style="height:472px">
+      <div class="shotcap">
+        <p class="lead">해설은 정답에게도, 오답에게도 열립니다.</p>
+        <ul class="sublist">
+          <li>맞히는 것이 아니라 <strong>알고 가는 것</strong>이 목적입니다</li>
+          <li>퀴즈는 <strong>DB 행</strong>입니다 — 코드에 없습니다</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 9. 배지 수첩 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Screen 5</div>
+  <h2>배지 수첩</h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="shotrow">
+      <img class="shot" src="assets/badges-book.jpg" alt="나의 탐험 배지 수첩 — 5개 모두 잠긴 상태" style="height:470px">
+      <div class="shotcap">
+        <p class="lead">하천 5개 = 배지 5개.</p>
+        <ul class="sublist">
+          <li>미션 완수 + 퀴즈 정답 → 하천별 배지</li>
+          <li>지급 판정은 <strong>서버가 DB에서 다시 셉니다</strong></li>
+          <li class="amber">기록이 남으려면 로그인이 필요합니다</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 10. 시연 도구 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Demo</div>
+  <h2>현장에 가지 않고 <span class="thin">해금 보여주기</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="shotrow">
+      <img class="shot" src="assets/app-demo.jpg" alt="시연용 위치 이동 패널 — 하천을 누르면 그 반경 안으로 이동" style="height:470px">
+      <div class="shotcap">
+        <p class="lead">주소 끝에 <span class="mono">?demo=1</span></p>
+        <ul class="sublist">
+          <li>하천을 누르면 그 반경 안으로 이동합니다</li>
+          <li class="amber">시뮬레이션 중에는 버튼이 <strong>주황색</strong>으로 바뀝니다</li>
+          <li class="amber">시연임을 <strong>숨기지 않습니다</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 11. 5대 하천 구성 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Content</div>
+  <h2>하천마다 <span class="thin">구성이 다릅니다</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <table>
+      <thead>
+        <tr><th>하천</th><th>체험 미션</th><th>퀴즈</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">수영강</td><td><span class="tag none">없음</span></td><td>1문항</td></tr>
+        <tr><td class="name">부전천</td><td><span class="tag none">없음</span></td><td>1문항</td></tr>
+        <tr><td class="name">온천천</td><td><span class="tag">tap_target</span></td><td>1문항</td></tr>
+        <tr><td class="name">동천</td><td><span class="tag">collect</span></td><td><span class="dim">0문항</span></td></tr>
+        <tr><td class="name">대천천</td><td><span class="tag">observe_log</span></td><td>1문항</td></tr>
+      </tbody>
+    </table>
+    <p class="note warn-note">누락이 아니라 <strong>확정된 콘텐츠</strong>입니다.
+      완수를 “미션 AND 전 퀴즈”로 두면 배지 3개는 <strong>영원히 지급 불가</strong>가 됩니다 — 에러도 없이.
+      <span class="accent">없는 단계는 통과 처리</span>합니다.</p>
+  </div>
+</section>
+
+<!-- ══════════ 12. 아키텍처 (SVG) ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Architecture</div>
+  <h2>구조 한 장</h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="diawrap">
+      <svg class="dia" viewBox="0 0 1100 448" role="img"
+           aria-label="아키텍처: 브라우저 · Supabase · Vercel 3계층">
+        <defs>
+          <marker id="arArrow" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5eead4"/>
+          </marker>
+        </defs>
+
+        <!-- 브라우저 -->
+        <rect x="0" y="0" width="1100" height="118" rx="15"
+              fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <line x1="228" y1="16" x2="228" y2="102" stroke="#2f5468" stroke-width="1.5"/>
+        <text x="30" y="53" font-size="27" font-weight="800" fill="#ffffff">브라우저</text>
+        <text x="30" y="81" font-size="17" fill="#7f9bb0">PWA · 설치 없음</text>
+        <text x="258" y="47" font-size="20" fill="#5eead4" font-weight="700">React 18 · TypeScript · Vite · Tailwind · TanStack Query</text>
+        <text x="258" y="77" font-size="19" fill="#bdd4e3">카카오 지도 · 사진 EXIF 제거 · 위치 판정 <tspan fill="#fbbf5c" font-weight="700">(클라이언트)</tspan></text>
+
+        <!-- 화살표 1 -->
+        <line x1="130" y1="122" x2="130" y2="158" stroke="#5eead4" stroke-width="2.4" marker-end="url(#arArrow)"/>
+        <text x="152" y="147" font-size="19" fill="#9db6c8"><tspan fill="#5eead4" font-weight="700">anon 키</tspan> · RLS 그대로 적용 (E2E 도 같은 경로)</text>
+
+        <!-- Supabase -->
+        <rect x="0" y="172" width="1100" height="148" rx="15"
+              fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <line x1="228" y1="190" x2="228" y2="302" stroke="#2f5468" stroke-width="1.5"/>
+        <text x="30" y="228" font-size="27" font-weight="800" fill="#ffffff">Supabase</text>
+        <text x="30" y="256" font-size="17" fill="#7f9bb0">마이그레이션 18개</text>
+        <text x="30" y="278" font-size="17" fill="#7f9bb0">RLS 정책 35개</text>
+        <text x="258" y="215" font-size="20" fill="#5eead4" font-weight="700">Postgres + PostGIS · Auth · Storage</text>
+        <text x="258" y="248" font-size="19" fill="#bdd4e3">RPC — record_checkin · river_progress · claim_river_badge</text>
+        <text x="258" y="277" font-size="19" fill="#bdd4e3">Table — rivers · quizzes · visits · species(44종) · points_ledger</text>
+        <text x="258" y="303" font-size="19" fill="#fbbf5c">Edge classify — 작성만, 배포·실행된 적 없음</text>
+
+        <!-- 화살표 2 -->
+        <line x1="130" y1="324" x2="130" y2="356" stroke="#5eead4" stroke-width="2.4" marker-end="url(#arArrow)"/>
+
+        <!-- Vercel -->
+        <rect x="0" y="370" width="1100" height="78" rx="15"
+              fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <line x1="228" y1="384" x2="228" y2="434" stroke="#2f5468" stroke-width="1.5"/>
+        <text x="30" y="408" font-size="27" font-weight="800" fill="#ffffff">Vercel</text>
+        <text x="30" y="432" font-size="17" fill="#7f9bb0">정적 배포</text>
+        <text x="258" y="404" font-size="19" fill="#bdd4e3">SPA rewrite · sw.js 캐시 금지 (옛 버전에 갇히는 것 방지)</text>
+        <text x="258" y="432" font-size="19" fill="#bdd4e3">Permissions-Policy 로 geolocation · camera 를 self 로 제한</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 13. 차별점 1 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">차별점 1</div>
+  <h2>콘텐츠를 <span class="thin">코드가 아니라</span> DB가 정의합니다</h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="grid g2">
+      <div class="card rose">
+        <h3>before</h3>
+        <p>하천마다 렌더 함수 하나씩</p>
+        <p>→ 6번째 하천 = <strong>코드 추가 + 재배포</strong></p>
+      </div>
+      <div class="card">
+        <h3>after</h3>
+        <p><span class="mono">mission_kind</span> ENUM + <span class="mono">mission_config</span> JSONB</p>
+        <p>→ 6번째 하천 = <strong>DB 행 하나</strong></p>
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:16px">
+      <div class="card blue tight"><h3>동천 · collect</h3><p>목표 3개 줍기</p></div>
+      <div class="card blue tight"><h3>온천천 · tap_target</h3><p>대상 촬영</p></div>
+      <div class="card blue tight"><h3>대천천 · observe_log</h3><p>관찰일지 4칸</p></div>
+    </div>
+    <p class="note">5종 모두 구현돼 있고, 지금 배치된 것은 <strong>3종</strong>입니다.</p>
+  </div>
+</section>
+
+<!-- ══════════ 14. 차별점 2 — 사진 파이프라인 (SVG) ══════════ -->
+<section class="slide">
+  <div class="eyebrow">차별점 2</div>
+  <h2>지우고 끝내지 않고 <span class="thin">다시 읽습니다</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="diawrap">
+      <svg class="dia" viewBox="0 0 1100 240" role="img"
+           aria-label="사진 파이프라인: 촬영 → EXIF·GPS 제거 → 압축 → 잔존 바이트 스캔 → 업로드">
+        <defs>
+          <marker id="ppArrow" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#4c7189"/>
+          </marker>
+          <marker id="ppStop" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#f4849b"/>
+          </marker>
+        </defs>
+
+        <rect x="0"   y="14" width="190" height="98" rx="14" fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <text x="95"  y="56" text-anchor="middle" font-size="24" font-weight="800" fill="#ffffff">촬영</text>
+        <text x="95"  y="84" text-anchor="middle" font-size="16" fill="#9db6c8">브라우저 안에서</text>
+
+        <rect x="227" y="14" width="190" height="98" rx="14" fill="rgba(45,212,191,.09)" stroke="#2a6b64" stroke-width="1.5"/>
+        <text x="322" y="56" text-anchor="middle" font-size="24" font-weight="800" fill="#5eead4">EXIF·GPS 제거</text>
+        <text x="322" y="84" text-anchor="middle" font-size="16" fill="#9db6c8">Canvas 재인코딩</text>
+
+        <rect x="454" y="14" width="190" height="98" rx="14" fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <text x="549" y="56" text-anchor="middle" font-size="24" font-weight="800" fill="#ffffff">압축</text>
+        <text x="549" y="84" text-anchor="middle" font-size="16" fill="#9db6c8">용량 축소</text>
+
+        <rect x="681" y="14" width="190" height="98" rx="14" fill="rgba(45,212,191,.09)" stroke="#2a6b64" stroke-width="1.5"/>
+        <text x="776" y="56" text-anchor="middle" font-size="24" font-weight="800" fill="#5eead4">잔존 스캔</text>
+        <text x="776" y="84" text-anchor="middle" font-size="16" fill="#9db6c8">나가는 바이트 재검사</text>
+
+        <rect x="908" y="14" width="190" height="98" rx="14" fill="rgba(255,255,255,.05)" stroke="#2f5468" stroke-width="1.5"/>
+        <text x="1003" y="56" text-anchor="middle" font-size="24" font-weight="800" fill="#ffffff">업로드</text>
+        <text x="1003" y="84" text-anchor="middle" font-size="16" fill="#9db6c8">Storage</text>
+
+        <g stroke="#4c7189" stroke-width="2.4" fill="none" marker-end="url(#ppArrow)">
+          <line x1="194" y1="63" x2="221" y2="63"/>
+          <line x1="421" y1="63" x2="448" y2="63"/>
+          <line x1="648" y1="63" x2="675" y2="63"/>
+          <line x1="875" y1="63" x2="902" y2="63"/>
+        </g>
+
+        <!-- 실패 분기 -->
+        <path d="M 776 116 V 168" stroke="#f4849b" stroke-width="2.4" fill="none" marker-end="url(#ppStop)"/>
+        <rect x="586" y="178" width="380" height="52" rx="13" fill="rgba(244,132,155,.1)" stroke="#7d4453" stroke-width="1.5"/>
+        <text x="776" y="211" text-anchor="middle" font-size="21" font-weight="700" fill="#f4849b">남아 있으면 업로드 중단</text>
+      </svg>
+    </div>
+    <p class="note"><strong>순서가 핵심입니다.</strong> 서버 도착 후 지우면 이미 촬영 좌표를 수신한 것이 됩니다.</p>
+  </div>
+</section>
+
+<!-- ══════════ 15. 차별점 2b — 안 받는 것 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">차별점 2</div>
+  <h2>안 받는 것이 <span class="thin">가장 싼 보호입니다</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <ul class="checks big">
+      <li>계정은 <strong>보호자</strong>, 아동 이름·나이·학교 입력란은 <strong>아예 없음</strong></li>
+      <li>얼굴 사진 미션을 <strong>만들지 않았습니다</strong> — 풍경·생물·시설만</li>
+      <li class="amber">동의 화면에 <strong>“언제든 삭제”라고 쓰지 않았습니다</strong> — 그 버튼이 없으니까</li>
+    </ul>
+    <p class="note">문구가 슬그머니 되살아나지 않도록 <strong>테스트로 고정</strong>해 뒀습니다.</p>
+  </div>
+</section>
+
+<!-- ══════════ 16. 차별점 3 — 권한 계층 (SVG) ══════════ -->
+<section class="slide">
+  <div class="eyebrow">차별점 3</div>
+  <h2>서버가 진실을 정합니다</h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="diawrap">
+      <svg class="dia" viewBox="0 0 1100 280" role="img"
+           aria-label="권한 계층: anon · authenticated · service_role">
+        <!-- anon -->
+        <rect x="0" y="0" width="1100" height="78" rx="14"
+              fill="rgba(45,212,191,.08)" stroke="#2a6b64" stroke-width="1.5"/>
+        <line x1="300" y1="14" x2="300" y2="64" stroke="#2a6b64" stroke-width="1.5"/>
+        <text x="30" y="38" font-size="25" font-weight="800" fill="#5eead4"
+              font-family="Cascadia Mono, Consolas, monospace">anon</text>
+        <text x="30" y="63" font-size="17" fill="#7f9bb0">미로그인 방문자</text>
+        <text x="330" y="35" font-size="20" fill="#dbeaf4">rivers · spots · quizzes · species <tspan fill="#5eead4" font-weight="700">읽기 열림</tspan></text>
+        <text x="330" y="62" font-size="20" fill="#dbeaf4">visits · points_ledger · dex_entries 직접 INSERT <tspan fill="#f4849b" font-weight="700">봉인</tspan></text>
+
+        <!-- authenticated -->
+        <rect x="0" y="100" width="1100" height="78" rx="14"
+              fill="rgba(107,168,255,.08)" stroke="#33557f" stroke-width="1.5"/>
+        <line x1="300" y1="114" x2="300" y2="164" stroke="#33557f" stroke-width="1.5"/>
+        <text x="30" y="138" font-size="25" font-weight="800" fill="#9cc6ff"
+              font-family="Cascadia Mono, Consolas, monospace">authenticated</text>
+        <text x="30" y="163" font-size="17" fill="#7f9bb0">로그인한 보호자</text>
+        <text x="330" y="135" font-size="20" fill="#dbeaf4"><tspan fill="#9cc6ff" font-weight="700">auth.uid()</tspan> 가 가리키는 내 행만</text>
+        <text x="330" y="162" font-size="20" fill="#dbeaf4">값은 <tspan font-weight="700" fill="#ffffff">서버 함수를 통해서만</tspan> 생깁니다</text>
+
+        <!-- service_role -->
+        <rect x="0" y="200" width="1100" height="78" rx="14"
+              fill="rgba(251,191,92,.08)" stroke="#7a6033" stroke-width="1.5"/>
+        <line x1="300" y1="214" x2="300" y2="264" stroke="#7a6033" stroke-width="1.5"/>
+        <g transform="translate(46,236)">
+          <rect x="-10" y="-2" width="20" height="14" rx="3" fill="none" stroke="#fbbf5c" stroke-width="2.2"/>
+          <path d="M -5.5 -2 V -8 A 5.5 5.5 0 0 1 5.5 -8 V -2" fill="none" stroke="#fbbf5c" stroke-width="2.2"/>
+        </g>
+        <text x="72" y="238" font-size="25" font-weight="800" fill="#fbbf5c"
+              font-family="Cascadia Mono, Consolas, monospace">service_role</text>
+        <text x="30" y="265" font-size="17" fill="#7f9bb0">브라우저 번들에 없음</text>
+        <text x="330" y="235" font-size="20" fill="#dbeaf4">E2E 의 <tspan font-weight="700" fill="#ffffff">계정 생성에만</tspan> 사용 — 번들 감사로 확인</text>
+        <text x="330" y="262" font-size="20" fill="#dbeaf4">그 이후 모든 동작은 anon 키 클라이언트</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 17. 차별점 3b ══════════ -->
+<section class="slide">
+  <div class="eyebrow">차별점 3</div>
+  <h2>포인트는 잔액이 아니라 <span class="thin">원장입니다</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="grid g2">
+      <div class="card">
+        <h3>append-only 원장</h3>
+        <p>잔액 컬럼이 없습니다. 잔액은 <span class="mono">SUM(delta)</span>.</p>
+        <p>수정·삭제 대신 <strong>반대 부호의 보정 행</strong>을 넣습니다.</p>
+      </div>
+      <div class="card">
+        <h3>배지는 서버가 다시 셉니다</h3>
+        <p><span class="mono">claim_river_badge</span> 가 DB에서 재집계한 뒤에야 지급합니다.</p>
+        <p>“다 했어요”라고 주장하는 경로가 <strong>없습니다</strong>.</p>
+      </div>
+      <div class="card amber">
+        <h3>단, 잠금 표시는 클라이언트</h3>
+        <p>개발자도구로 <strong>우회 가능</strong>합니다.</p>
+      </div>
+      <div class="card amber">
+        <h3>그래서 “인증됨”이라고 쓰지 않습니다</h3>
+        <p>아는 것은 <strong>기기가 스스로 보고한 위치</strong>뿐입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 18. 검증 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Verification</div>
+  <h2>주장하지 않고 <span class="thin">돌려서 확인했습니다</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="stats">
+      <div class="stat"><div class="n">490</div><div class="l">유닛 테스트<br>32개 파일</div></div>
+      <div class="stat"><div class="n">27</div><div class="l">e2e-rls<br>RLS · 체크인</div></div>
+      <div class="stat"><div class="n">15</div><div class="l">e2e-rivers<br>미션 · 배지</div></div>
+      <div class="stat"><div class="n">16</div><div class="l">e2e-auth<br>가입 · 동의</div></div>
+    </div>
+    <p class="statline">마이그레이션 <b>17개</b> · RLS 정책 <b>35개</b> · 하천 <b>5개</b> · 종 <b>44개</b></p>
+    <p class="note">E2E 는 <strong>실제 Supabase</strong>에 붙고 <strong>RLS 를 우회하지 않습니다.</strong>
+      여기서 막히면 브라우저에서도 막힙니다.</p>
+  </div>
+</section>
+
+<!-- ══════════ 19. 버그 1 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">실제로 잡은 버그 · DB</div>
+  <h2>트리거는 발화했지만 <span class="thin">아무것도 막지 않았다</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card rose">
+      <h3>① <span class="mono">SECURITY DEFINER</span> 안의 <span class="mono">current_user</span></h3>
+      <p>DEFINER 는 실행 주체를 <strong>함수 소유자</strong>로 바꿉니다 — 함수 안에서는 언제나 <span class="mono">postgres</span>.</p>
+      <p>조건이 <strong>항상 거짓</strong>이라 자가 승격이 그대로 통과했습니다.</p>
+      <p>오류도 로그도 없어서 스키마만 읽으면 “보호되고 있다”고 보입니다.</p>
+    </div>
+    <p class="note"><span class="accent">E2E 에서 실제로 승격에 성공해 발견</span>했고, INSERT 정책과 트리거 <strong>두 경로 모두</strong> 막았습니다. (0012)</p>
+  </div>
+</section>
+
+<!-- ══════════ 20. 버그 2 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">실제로 잡은 버그 · DB</div>
+  <h2>조용히 통과하던 것들</h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card amber">
+      <h3>② Postgres 는 GRANT 를 RLS 보다 <strong>먼저</strong> 본다</h3>
+      <p>미로그인 호출이 “0행”이 아니라 <span class="mono">permission denied</span> 로 터졌습니다.</p>
+      <p>해법은 <strong>인자 없는 최소 DEFINER 헬퍼</strong> — <span class="mono">auth.uid()</span> 만 보면 남의 상태를 물어볼 방법이 없습니다. (0011 · 0014)</p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>③ <span class="mono">(0,0)</span> 은 “없음”이 아니다</h3>
+      <p>좌표 자리표시자가 거리 계산에 섞여 <span class="warn">“약 9,700km 더 가야 해요”</span> 가 떴습니다.</p>
+      <p>에러가 아니라 <strong>그럴듯한 오답</strong>이라 더 위험합니다. DB 제약으로 막았습니다. (0016)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 21. 버그 3 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">실제로 잡은 버그 · 프론트엔드</div>
+  <h2>동작하는 것처럼 <span class="thin">보이던 것들</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card rose">
+      <h3>④ 로그인은 됐는데 <strong>아무것도 저장되지 않는</strong> 상태</h3>
+      <p>온보딩 판정이 <span class="mono">users</span> 행만 보고 <span class="mono">consent_id</span> 를 안 봤습니다. 화면은 정상, <strong>기록만 조용히 사라짐</strong>.</p>
+    </div>
+    <div class="card amber" style="margin-top:14px">
+      <h3>⑤ 로그인 모달을 <strong>여는 것만으로</strong> 캐시 전체가 비워짐</h3>
+      <p><span class="mono">INITIAL_SESSION</span> 이 즉시 발화해 <span class="mono">queryClient.clear()</span> 가 실행됐습니다. 비워야 하는 건 <strong>로그아웃 때뿐</strong>.</p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>⑥ 입력창이 투명해지던 문제 — 원인이 <strong>둘</strong></h3>
+      <p>디자인 토큰 9종 소실 + Tailwind preflight. <span class="accent">둘 중 하나만 있었으면 드러나지 않았을</span> 문제였고, 영향은 13개 파일.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 22. 한계 1/2 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Honest Limits · 1/2</div>
+  <h2>아직 <span class="thin">사실이 아닌 것들</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="grid g2">
+      <div class="card amber">
+        <h3>하천 좌표는 미검증 근사값</h3>
+        <p>현장 답사를 하지 않았습니다.</p>
+        <p>하천은 선인데 <strong>점 하나 + 반경</strong>으로 근사 중입니다.</p>
+      </div>
+      <div class="card amber">
+        <h3>잠금 판정이 클라이언트</h3>
+        <p>개발자도구로 <strong>우회 가능</strong>합니다.</p>
+        <p>해금은 아직 아무 기록도 남기지 않습니다.</p>
+      </div>
+      <div class="card rose">
+        <h3>AI 종 판별은 미배포</h3>
+        <p><span class="mono">classify</span> Edge Function 은 <strong>작성만</strong> 되어 있습니다.</p>
+        <p>배포·실행된 적이 없고 <strong>데모에서 동작하지 않습니다</strong>.</p>
+      </div>
+      <div class="card rose">
+        <h3>동의 철회 · 계정 삭제 화면 없음</h3>
+        <p>DB 쪽 삭제는 가능하지만 <strong>앱 안에 경로가 없습니다</strong>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 23. 한계 2/2 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Honest Limits · 2/2</div>
+  <h2>아직 <span class="thin">사실이 아닌 것들</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="shotrow">
+      <img class="shot" src="assets/app-dex.jpg" alt="도감 화면 — 44장 중 0장" style="height:400px">
+      <div class="shotcap">
+        <div class="card rose">
+          <h3>카메라 미션 <strong>실기기 미검증</strong></h3>
+          <p>이미지 파이프라인은 테스트로 덮여 있지만, <strong>실기기 카메라로는 확인하지 않았습니다.</strong></p>
+        </div>
+        <div class="card amber" style="margin-top:14px">
+          <h3>도감 44종은 메인 흐름 밖</h3>
+          <p>동작하지만 홈 흐름에 연결돼 있지 않습니다. <span class="mono">/dex</span> 로만 접근합니다.</p>
+        </div>
+        <div class="card amber" style="margin-top:14px">
+          <h3><span class="mono">visits</span> 에 좌표를 저장합니다</h3>
+          <p>일정 단축을 위해 0010 에서 방침을 바꿨습니다. <strong>보관 기간·파기 절차가 아직 없습니다.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 24. 다음 단계 ══════════ -->
+<section class="slide">
+  <div class="eyebrow">Next</div>
+  <h2>다음 단계 <span class="thin">— 순서가 있습니다</span></h2>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="grid g2">
+      <div class="card rose">
+        <h3>배포 전 블로커</h3>
+        <p>· 현장 답사로 좌표 실측</p>
+        <p>· 지오펜스를 <span class="mono">LineString</span> 으로 — 함수는 안 고쳐도 됩니다</p>
+        <p>· 좌표 보관·파기 절차 확정</p>
+      </div>
+      <div class="card amber">
+        <h3>그다음 · 신뢰</h3>
+        <p>· 잠금 판정을 서버로 이동</p>
+        <p>· 동의 철회 · 계정 삭제 화면</p>
+        <p>· 실기기 카메라 미션 검증</p>
+      </div>
+      <div class="card blue">
+        <h3>기능 확장</h3>
+        <p>· <span class="mono">classify</span> 실제 배포</p>
+        <p>· 도감 44종을 메인 흐름에 연결</p>
+      </div>
+      <div class="card">
+        <h3>콘텐츠와 운영</h3>
+        <p>· <strong>생태 자문으로 서식종 검증</strong></p>
+        <p>· 가족 파일럿에서 “빈손 이탈률” 계측</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 25. 마무리 ══════════ -->
+<section class="slide closing">
+  <div class="eyebrow">Closing</div>
+  <h2 style="margin-bottom:30px">정직한 잠금, 정직한 문구, 정직한 한계</h2>
+  <ul class="quotes">
+    <li>화면에 “인증됨”이라고 쓰지 않았습니다.
+      <span>아는 건 기기가 스스로 보고한 위치뿐이니까요.</span>
+    </li>
+    <li>동의 화면에 “언제든 지울 수 있어요”라고 쓰지 않았습니다.
+      <span>그 버튼이 아직 없으니까요.</span>
+    </li>
+    <li>하천 하나를 더하는 데 필요한 건 <strong>DB 행 하나</strong>입니다.
+      <span>콘텐츠를 코드가 아니라 DB가 정의하기 때문입니다.</span>
+    </li>
+  </ul>
+  <p class="blank" style="margin-top:22px">데모 URL · 저장소 주소 · 연락처 — 발표 전에 채워 주세요</p>
+</section>
+
+<!-- 오버레이 -->
+<div id="counter"><b id="cur">1</b> / <span id="total">25</span></div>
+<div id="hint">← → 또는 스페이스로 이동</div>
+<div id="progress"></div>
+
+</div>
+</div>
+
+<script>
+(function () {
+  var stage  = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var curEl  = document.getElementById('cur');
+  var totEl  = document.getElementById('total');
+  var barEl  = document.getElementById('progress');
+  var hintEl = document.getElementById('hint');
+  var index  = 0;
+
+  totEl.textContent = slides.length;
+
+  /* 1280×720 무대를 화면에 꽉 차게 확대/축소 — 프로젝터 해상도만큼 글자도 커집니다. */
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+  }
+
+  function show(n) {
+    index = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (el, i) { el.classList.toggle('active', i === index); });
+    curEl.textContent = index + 1;
+    barEl.style.width = ((index + 1) / slides.length * 100) + '%';
+    if (location.hash !== '#' + (index + 1)) {
+      history.replaceState(null, '', '#' + (index + 1));
+    }
+  }
+
+  function next() { show(index + 1); }
+  function prev() { show(index - 1); }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Spacebar':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace':
+        e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End':  e.preventDefault(); show(slides.length - 1); break;
+    }
+  });
+
+  /* 클릭/탭: 화면 왼쪽 1/4은 이전, 나머지는 다음 */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('a')) return;
+    (e.clientX < window.innerWidth * 0.25) ? prev() : next();
+  });
+
+  /* 터치 스와이프 */
+  var x0 = null;
+  document.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 45) { dx < 0 ? next() : prev(); }
+    x0 = null;
+  }, { passive: true });
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function () {
+    var n = parseInt(location.hash.slice(1), 10);
+    if (!isNaN(n)) show(n - 1);
+  });
+
+  fit();
+  var start = parseInt(location.hash.slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1);
+
+  setTimeout(function () { hintEl.style.opacity = '0'; }, 6000);
+})();
+</script>
+</body>
+</html>
