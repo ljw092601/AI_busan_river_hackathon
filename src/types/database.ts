@@ -1002,7 +1002,8 @@ export type Database = {
       current_user_is_expert: { Args: Record<string, never>; Returns: boolean }
       claim_river_badge: { Args: { p_river_id: string }; Returns: Json }
       claim_species_photo: {
-        Args: { p_species_id: string; p_photo_id: string }
+        /** p_photo_id 는 보호종(report_only)에 한해 생략 가능합니다 — 0020 참조. */
+        Args: { p_species_id: string; p_photo_id?: string }
         Returns: Json
       }
       river_progress: {

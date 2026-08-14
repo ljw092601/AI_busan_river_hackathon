@@ -18,9 +18,12 @@
  * 빈 화면은 "앱이 죽었다"로 읽힙니다 — 아이는 5초를 기다려주지 않습니다.
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '../../lib/session';
+import type { DexEntry, Species } from '../../types/domain';
 import { DexScreen } from './DexScreen';
+import { SpeciesPhotoClaim } from './SpeciesPhotoClaim';
 import { dexKeys, fetchDexEntries, fetchSpecies } from './queries';
 import styles from './DexContainer.module.css';
 
@@ -38,6 +41,28 @@ const SPECIES_STALE_MS = 1000 * 60 * 60;
 
 export function DexContainer({ month, showWaterGrade, sectionName }: DexContainerProps) {
   const { userId, isLoading: sessionLoading } = useSession();
+  const queryClient = useQueryClient();
+
+  /**
+   * 카드 뒷면의 "사진 찍어 등록하기".
+   *
+   * 등록은 서버가 처리하고(claim_species_photo → observations → 트리거가 카드·포인트),
+   * 여기서는 성공했을 때 **내 도감을 다시 불러오는 일만** 합니다.
+   * 잔액·진척 같은 다른 화면도 같이 변하므로 dex 키 전체를 무효화합니다.
+   *
+   * 미로그인일 때도 그대로 그립니다 — 진입점을 감추면 "왜 안 되는지"를 말할 자리가
+   * 사라져서, 기능이 아예 없는 것처럼 보입니다. 안내는 SpeciesPhotoClaim 이 합니다.
+   */
+  const renderClaim = useCallback(
+    (s: Species, entry: DexEntry | null) => (
+      <SpeciesPhotoClaim
+        species={s}
+        owned={Boolean(entry)}
+        onAcquired={() => void queryClient.invalidateQueries({ queryKey: dexKeys.all })}
+      />
+    ),
+    [queryClient],
+  );
 
   const speciesQuery = useQuery({
     queryKey: dexKeys.species(),
@@ -125,6 +150,7 @@ export function DexContainer({ month, showWaterGrade, sectionName }: DexContaine
         {...(month !== undefined ? { month } : {})}
         {...(showWaterGrade !== undefined ? { showWaterGrade } : {})}
         {...(sectionName ? { sectionName } : {})}
+        renderClaim={renderClaim}
       />
     </div>
   );

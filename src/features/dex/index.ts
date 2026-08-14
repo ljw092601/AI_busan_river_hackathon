@@ -35,6 +35,31 @@ export type { WaterGradeSummaryProps } from './WaterGradeSummary';
 export { CardAcquired } from './CardAcquired';
 export type { CardAcquiredProps } from './CardAcquired';
 
+// ─── 사진으로 카드 얻기 (PLAN.md §7) ───────────────────────────
+// DexContainer가 이미 카드 뒷면에 꽂아 두었습니다. 다른 화면(코스 종료 요약 등)에서
+// 직접 쓰려면 DexScreen/DexCardSheet의 `renderClaim` 슬롯에 넘기세요.
+export { SpeciesPhotoClaim, ClaimNeedsLogin, ClaimPending } from './SpeciesPhotoClaim';
+export type { SpeciesPhotoClaimProps } from './SpeciesPhotoClaim';
+
+export { DEX_PHOTO_TAG, useSpeciesPhotoClaim } from './useSpeciesPhotoClaim';
+export type { SpeciesClaimStatus, SpeciesPhotoClaimController } from './useSpeciesPhotoClaim';
+
+export {
+  ALREADY_OWNED_MESSAGE,
+  PHOTO_UNVERIFIED_NOTE,
+  claimFailureMessage,
+  claimSpeciesPhoto,
+  isRetryableFailure,
+  parseClaimResult,
+} from './claim';
+export type {
+  ClaimAcquired,
+  ClaimAlreadyOwned,
+  ClaimFailureReason,
+  ClaimRejected,
+  ClaimResult,
+} from './claim';
+
 // ─── 로직 (테스트·재사용용) ─────────────────────────────────────
 export { judgeWaterGrade, waterGradeMessage } from './waterGrade';
 export type { WaterGradeJudgement, WaterGradeRow } from './waterGrade';

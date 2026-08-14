@@ -8,7 +8,7 @@
  * 열려 있는 카드가 무엇인지 같은 **화면 상태만** 안에서 관리합니다.
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { DexEntry, Species } from '../../types/domain';
 import { DexGrid } from './DexGrid';
 import { DexProgress } from './DexProgress';
@@ -26,6 +26,12 @@ export interface DexScreenProps {
   showWaterGrade?: boolean;
   /** "온천천 ④ 물의 건강검진소" 같은 구간 이름 */
   sectionName?: string;
+  /**
+   * 카드 뒷면에 끼워 넣을 "사진 찍어 등록하기" 슬롯.
+   * 넘기지 않으면 도감은 지금까지처럼 보기 전용입니다 —
+   * 코스 종료 요약처럼 등록이 필요 없는 문맥에서 그대로 재사용하기 위해서입니다.
+   */
+  renderClaim?: (species: Species, entry: DexEntry | null) => ReactNode;
 }
 
 export function DexScreen({
@@ -34,6 +40,7 @@ export function DexScreen({
   month = currentMonth(),
   showWaterGrade = true,
   sectionName,
+  renderClaim,
 }: DexScreenProps) {
   const [selected, setSelected] = useState<Species | null>(null);
 
@@ -68,6 +75,7 @@ export function DexScreen({
         species={selected}
         entry={selected ? (entryBySpecies.get(selected.id) ?? null) : null}
         month={month}
+        {...(renderClaim ? { renderClaim } : {})}
         onClose={() => setSelected(null)}
       />
     </div>
